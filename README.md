@@ -36,10 +36,8 @@ This Employee Management System is a comprehensive web application designed to f
 1. **Clone the Repository**: First, clone the repository to your local machine using the following command:
 
     ```bash
-    git clone [repository-url]
+    git clone https://github.com/nadermasri/employeetaskpro
     ```
-
-    Replace `[repository-url]` with the actual URL of your project's repository.
 
 2. **Install Dependencies**: Once you have cloned the repository, navigate to the project directory and install the required dependencies using:
 
