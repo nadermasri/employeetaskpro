@@ -1,0 +1,44 @@
+Employee Management System
+Overview
+This Employee Management System is a comprehensive web application designed to facilitate various aspects of employee and task management within an organization. Developed using Python and Django, this system allows managers and HR personnel to efficiently manage tasks, track employee progress, and maintain up-to-date employee records.
+
+Features
+Managerial Features
+Task Assignment: Managers can assign tasks to employees, setting clear expectations and responsibilities.
+Progress Tracking: Enables managers to monitor the progress of tasks to ensure timely completion.
+Task Modification: Allows for the deletion and reassignment of tasks as per changing requirements.
+Feedback Provision: Managers can provide constructive feedback on completed tasks to foster employee growth.
+Historical Data Access: Access to historical task performance data for comprehensive team performance assessment.
+HR Features
+Employee Onboarding: HR personnel can add new employees to the system, ensuring the employee database remains current.
+Record Maintenance: Detailed entry and updating of employee information for complete record-keeping.
+Inactive Status: Capability to mark former employees as inactive to maintain database integrity.
+Whistleblower Features
+Report Submission: Employees can anonymously submit whistleblower reports to highlight concerns.
+Feedback and Tracking: HR managers can provide feedback on and track the progress of whistleblower reports, maintaining transparency and accountability.
+Employee Features
+Task Management: Employees can view their assigned tasks, update task progress, and request clarifications to ensure effective task completion.
+Performance Feedback: Access to feedback on completed tasks for personal development.
+Workload Prioritization: Tools to prioritize tasks based on urgency and importance.
+Installation
+Clone the repository to your local machine:
+bash
+Copy code
+git clone (https://github.com/nadermasri/employeetaskpro)
+Install the required dependencies:
+Copy code
+pip install -r requirements.txt
+Migrate the database:
+Copy code
+python manage.py migrate
+Run the development server:
+Copy code
+python manage.py runserver
+Usage
+Navigate to http://127.0.0.1:8000/ in your web browser to access the Employee Management System. Use the login credentials provided to you by the system administrator to access the respective functionalities based on your role within the organization.
+
+Contributing
+We welcome contributions to the Employee Management System. Please read our contributing guidelines before submitting pull requests.
+
+Acknowledgments
+We would like to express our gratitude to all team members and contributors who have been part of this project.
