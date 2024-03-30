@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render
 from django.http import HttpResponse
-from .models import Emp
+from .models import Emp, Task
+from .forms import TaskAssignForm
 from django.utils import timezone
 
 
@@ -65,3 +66,18 @@ def do_update_emp(request, emp_id):
 
         emp.save()
         return redirect("/emp/home/")
+
+def assign_task(request):
+    if request.method == 'POST':
+        form = TaskAssignForm(request.POST)
+        if form.is_valid():
+            form.save()
+        return redirect('emp:emp_home')  # Use the 'emp:' namespace prefix
+    else:
+        form = TaskAssignForm()
+    return render(request, 'emp/assign_task.html', {'form': form})
+
+def my_tasks(request):
+    tasks = Task.objects.filter(assignee=request.user.employee)  # Adjust according to your user-employee relationship
+    return render(request, 'emp/my_tasks.html', {'tasks': tasks})
+

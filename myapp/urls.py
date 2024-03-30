@@ -21,6 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("",fun.emp_home),
     path("index/",fun.emp_home),
-    path("emp/",include('emp.urls'))
+    path("emp/", include(('emp.urls', 'emp'), namespace='emp'))
 
 ]
