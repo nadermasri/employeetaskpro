@@ -14,7 +14,8 @@
     <form method="post">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Assign Task</button>
+        <a href="/emp/home/" class="btn btn-secondary">Cancel</a>
+        <button href="/emp/home/" type="submit">Assign Task</button>
     </form>
     </div>
 

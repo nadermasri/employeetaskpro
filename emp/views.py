@@ -72,7 +72,7 @@ def assign_task(request):
         form = TaskAssignForm(request.POST)
         if form.is_valid():
             form.save()
-        return redirect('emp:emp_home')  # Use the 'emp:' namespace prefix
+        return redirect("/emp/home/")  # Use the 'emp:' namespace prefix
     else:
         form = TaskAssignForm()
     return render(request, 'emp/assign_task.html', {'form': form})
