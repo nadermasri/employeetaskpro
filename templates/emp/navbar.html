@@ -8,20 +8,40 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        {% if is_hr_or_manager %}
         <li class="nav-item">
           <a class="nav-link" href="/emp/add-emp/">Add Employee</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/emp/home/">View Employees</a>
         </li>
-        <!-- New navbar items for tasks -->
         <li class="nav-item">
           <a class="nav-link" href="/emp/assign-task/">Assign Task</a>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="/emp/my-tasks/">View Tasks</a>
         </li>
+        {% endif %}
+        {% if is_employee %}
+        <li class="nav-item">
+          <a class="nav-link" href="/emp/my-tasks/">View Tasks</a>
+        </li>
+        {% endif %}
       </ul>
+      <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+        {% if request.user.is_authenticated %}
+        <li class="nav-item">
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-link nav-link" style="padding: 0; border: none; background: none;">Logout</button>
+            </form>
+        </li>
+        {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'emp:custom_login' %}">Login</a>
+        </li>
+        {% endif %}
+    </ul>
     </div>
   </div>
 </nav>

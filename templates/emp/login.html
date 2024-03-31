@@ -1,4 +1,4 @@
-{% if error %}
+<!-- {% if error %}
   <p style="color: red;">{{ error }}</p>
 {% endif %}
 
@@ -15,4 +15,84 @@
   <div>
     <button type="submit">Login</button>
   </div>
-</form>
+</form> -->
+
+
+<!-- login.html within your templates/emp/ directory -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - EmployeeTaskPro</title>
+    <link rel="stylesheet" href="{% static 'css/login.css' %}">
+</head>
+<body>
+
+<div class="login-container">
+    <h1 class="login-title">EmployeeTaskPro</h1>
+    
+    {% if error %}
+    <p class="error-message">{{ error }}</p>
+    {% endif %}
+    
+    <form method="post" action="{% url 'custom_login' %}" class="login-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="user_type">User Type:</label>
+            <select id="user_type" name="user_type" class="user-select">
+                <option value="EMP">Employee</option>
+                <option value="HR">HR Manager</option>
+                <option value="Manager">Manager/Team Lead</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group password-group">
+          <label for="password">Password:</label>
+          <input type="password" id="password" name="password" class="password" required>
+          <button type="button" class="toggle-password" onclick="togglePassword()">
+              <img src="{% static 'images/viewpassword.png' %}" alt="Toggle Password">
+          </button>
+      </div>
+      
+        
+        <div class="form-group">
+            <button type="submit" class="login-button">Login</button>
+        </div>
+        <div class="form-group">
+          <button type="button" class="forgot-password" onclick="alert('Kindly contact your IT administrator for resetting your password.');">
+              Forgot username or password?
+          </button>
+      </div>
+    </form>
+</div>
+
+<footer class="login-footer">
+  <p>⚠️ Do not share your password with anyone. Keep your credentials secure.</p>
+  <p>© <span id="year"></span> EmployeeTaskPro. All rights reserved.</p>
+</footer>
+
+<script>
+    function togglePassword() {
+        const passwordInput = document.getElementById('password');
+        const toggleButton = document.querySelector('.toggle-password');
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        // Change the icon or style as needed
+        toggleButton.classList.toggle('show-password');
+    }
+</script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+</body>
+</html>
+
+
+
+

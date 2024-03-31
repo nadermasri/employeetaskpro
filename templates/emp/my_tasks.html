@@ -1,30 +1,63 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Employee Management System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
           rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
           crossorigin="anonymous">
-  </head>
-  <body>
-    {% include 'emp/navbar.html' %}
-    <h2>My Tasks</h2>
-<ul>
-    {% for task in tasks %}
-    <li>
-        <strong>{{ task.name }}</strong> - {{ task.description }}
-        <br>
-        Deadline: {{ task.deadline|date:"D, d M Y H:i" }} | Status: {{ task.status }}
-    </li>
-    {% empty %}
-    <li>No tasks assigned.</li>
-    {% endfor %}
-</ul>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
-            integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
-            crossorigin="anonymous"></script>
-  </body>
+</head>
+<body>
+{% include 'emp/navbar.html' %}
+<div class="container my-4">
+    <h2>Task Overview</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Task Name</th>
+                <th>Description</th>
+                <th>Assignee</th>
+                <th>Deadline</th>
+                <th>Status</th>
+                <th>Progress</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for tp in tasks_with_progress %}
+            <tr>
+                <td>{{ tp.task.name }}</td>
+                <td>{{ tp.task.description }}</td>
+                <td>{{ tp.assignee.firstname }} {{ tp.assignee.lastname }}</td>
+                <td>{{ tp.task.deadline|date:"D, d M Y H:i" }}</td>
+                <td>
+                    {% if request.user == tp.assignee %}
+                    <form method="post" action="{% url 'update_task_status' tp.task.id %}">
+                        {% csrf_token %}
+                        <select name="status" onchange="this.form.submit()">
+                            <option value="{{ tp.task.status }}" selected>{{ tp.task.status }}</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Almost Done">Almost Done</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </form>
+                    {% else %}
+                    {{ tp.task.status }}
+                    {% endif %}
+                </td>
+                <td>{{ tp.progress }}%</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No tasks assigned.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+        crossorigin="anonymous"></script>
+</body>
 </html>
+

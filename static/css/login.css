@@ -1,0 +1,149 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f6fa;
+    font-family: 'Arial', sans-serif;
+}
+
+.login-container {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 350px;
+}
+
+.login-title {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group.password-group {
+    position: relative;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 16px;
+    color: #666;
+}
+
+input[type="text"],
+input[type="password"],
+.user-select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0px;
+    top: 67%;  /* Center vertically */
+    transform: translateY(-50%); /* Adjust vertical centering */
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    height: 50px; /* Adjust if needed to match your input field's height */
+    display: flex;
+    align-items: center;
+}
+
+
+.login-button {
+    width: 100%;
+    background-color: #007bff;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.login-button:hover {
+    background-color: #0056b3;
+}
+
+.error-message {
+    color: #ff3860;
+    text-align: center;
+    margin-bottom: 15px;
+}
+.toggle-password img {
+    width: 30px;  /* Adjust the size of the image */
+    height: auto; /* Maintain aspect ratio */
+}
+
+.forgot-password {
+    display: block; /* Change to block to allow for auto margins */
+    background-color: #ffffff;
+    color: #007bff;
+    text-align: center;
+    padding: 5px 10px; /* Smaller padding */
+    font-size: 14px; /* Smaller font size */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    margin-top: 13px; /* Space from the login button */
+    margin-left: auto; /* Centers the button */
+    margin-right: auto; /* Centers the button */
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    width: auto; /* Auto width based on text content */
+}
+
+.forgot-password:hover,
+.forgot-password:focus {
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+    outline: none; /* Removes the outline on focus */
+}
+
+
+.login-footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px; /* or any appropriate value to give some space from the login form */
+    color: #666;
+    background-color: #f8f9fa;
+    border-top: 1px solid #eaeaea;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.login-footer p {
+    margin: 5px 0;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Optionally, if you want the footer to stick to the bottom of the screen: */
+body {
+    position: relative;
+    min-height: 100vh;
+}
+
+.login-container {
+    padding-bottom: 60px; /* Footer height */
+}
+
+.login-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}

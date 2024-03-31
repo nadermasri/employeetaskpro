@@ -9,6 +9,7 @@
           crossorigin="anonymous">
   </head>
   <body>
+    
     {% include 'emp/navbar.html' %}
     <h1 class="text-center my-3">Employees Table</h1>
     <div class="container">
@@ -35,6 +36,7 @@
                     <th>Address</th>
                     <th>Status</th>
                     <th>Department</th>
+                    <th>Progress</th> <!-- New column for progress -->
                     <th>Action</th>
                   </tr>
                 </thead>
@@ -58,6 +60,13 @@
                     <td>{{ e.status }}</td>
                     <td>{{ e.department }}</td>
                     <td>
+                      {% if e.progress != None %}
+                        {{ e.progress|floatformat:2 }}%
+                      {% else %}
+                        No tasks assigned
+                      {% endif %}
+                    </td>
+                    <td>
                       <a href="/emp/delete-emp/{{ e.id }}" class="btn btn-danger btn-sm">Delete</a>
                       <a href="/emp/update-emp/{{ e.id }}" class="btn btn-success btn-sm">Update</a>
                     </td>
@@ -68,7 +77,6 @@
             </div>
           </div>
         </div>
-      
       </div>
     </div>
 

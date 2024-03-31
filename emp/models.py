@@ -2,6 +2,13 @@ from email.policy import default
 from unittest.util import _MAX_LENGTH
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
+from django.db import models
+# VERSION1
+class Employee(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    # other fields...
+
 
 
 # Create your models here.
@@ -26,6 +33,7 @@ class Emp(models.Model):
         return self.firstname + ' ' +self.fathername + ' '+self.lastname + ' '
     
 class Task(models.Model):
+    # assignee = models.ForeignKey(Emp, on_delete=models.CASCADE, related_name='assigned_tasks')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     assignee = models.ForeignKey(Emp, on_delete=models.CASCADE, related_name='tasks')
@@ -37,3 +45,4 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+

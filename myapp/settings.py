@@ -55,11 +55,13 @@ ROOT_URLCONF = 'myapp.urls'
 
 TEMPLATES = [
     {
+        'DIRS': [BASE_DIR / 'templates'],
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [os.path.join(BASE_DIR,"templates")],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'emp.context_processors.user_roles',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
@@ -71,6 +73,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'myapp.wsgi.application'
 
+LOGIN_URL = 'emp:custom_login'
+LOGIN_REDIRECT_URL = 'emp:emp_home'
+LOGOUT_REDIRECT_URL = 'emp:custom_login'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
