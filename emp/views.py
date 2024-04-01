@@ -8,14 +8,19 @@ from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404, redirect
 from .forms import TaskUpdateForm
 from django.contrib import messages
-
-
+from django.contrib.auth.models import User, Group
+from django.contrib.auth.hashers import make_password
+from datetime import datetime
+from django.http import HttpResponseRedirect
 
 
 @login_required
 def emp_home(request):
+   
+    if request.user.groups.filter(name='Employee').exists():
+        return redirect('emp:my_tasks')
+
     emps = Emp.objects.all()
-    
     for emp in emps:
         tasks = Task.objects.filter(assignee=emp)
         completed_tasks = tasks.filter(status="Completed").count()
@@ -38,28 +43,70 @@ def emp_home(request):
 
 @login_required
 def add_emp(request):
-    if request.method == "POST":
-        firstname = request.POST.get("firstname")
-        fathername = request.POST.get("fathername")
-        lastname = request.POST.get("lastname")
-        gender = request.POST.get("gender", "")
-        dob = request.POST.get("dob", None)
-        emp_id = request.POST.get("emp_id")
-        phone = request.POST.get("phone")
-        email = request.POST.get("email")
-        date_hired = request.POST.get("date_hired", timezone.now().date())
-        salary = request.POST.get("salary", 0)
-        address = request.POST.get("address")
-        status = request.POST.get("status", True)
-        department = request.POST.get("department")
+    if request.method == "POST": 
+        dob = request.POST.get("dob")
+        dob_date = datetime.strptime(dob, "%Y-%m-%d") if dob else None  # Adjust date format as necessary
+        form_data = {
+            'firstname': request.POST.get("firstname", "").strip(),
+            'fathername': request.POST.get("fathername", "").strip(),
+            'lastname': request.POST.get("lastname", "").strip(),
+            'gender': request.POST.get("gender", "").strip(),
+            'dob': dob_date,
+            'emp_id': request.POST.get("emp_id", "").strip(),
+            'phone': request.POST.get("phone", "").strip(),
+            'email': request.POST.get("email", "").strip(),
+            'date_hired': request.POST.get("date_hired") or timezone.now().date(),
+            'salary': request.POST.get("salary", 0),
+            'address': request.POST.get("address", "").strip(),
+            'status': 'status' in request.POST,
+            'department': request.POST.get("department", "").strip(),
+        }
+        
+        if len(form_data['phone']) < 8:
+            messages.error(request, "Invalid phone number. Must be at least 8 characters.")
+            return render(request, "emp/add_emp.html", {'form_data': form_data})
 
-        e = Emp(firstname=firstname, fathername=fathername, lastname=lastname,
-                gender=gender, dob=dob, emp_id=emp_id, phone=phone, email=email,
-                date_hired=date_hired, salary=salary, address=address, status=status,
-                department=department, date_added=timezone.now())
+        if any(not value for key, value in form_data.items() if key != 'status'):  # Skip 'status' for this check
+            messages.error(request, "Please fill out all required fields.")
+            return render(request, "emp/add_emp.html", {'form_data': form_data})
+
+        username_base = f"{form_data['firstname'][0]}{form_data['lastname']}".lower()
+        plaintext_password = f"{form_data['phone'][-4:]}{dob_date.year if dob_date else ''}"
+
+        unique = False
+        counter = 1
+        username = username_base
+        while not unique:
+            if User.objects.filter(username=username).exists():
+                username = f"{username_base}{counter}"
+                counter += 1
+            else:
+                unique = True
+
+        user = User.objects.create_user(  # Use create_user to handle password hashing
+            username=username,
+            password=plaintext_password,
+            first_name=form_data['firstname'],
+            last_name=form_data['lastname'],
+            email=form_data['email'],
+        )
+
+        # Fetch the 'Employee' group
+        employee_group = Group.objects.get(name='Employee')
+
+        # Add the user to the 'Employee' group
+        employee_group.user_set.add(user)
+
+
+        e = Emp(**form_data, user=user, date_added=timezone.now())
         e.save()
-        return redirect("/emp/home/")
-    return render(request, "emp/add_emp.html", {})
+
+
+       # After saving the employee record
+        messages.success(request, "Employee added successfully.")
+        return render(request, 'emp/employee_success.html', {'username': user.username, 'password':plaintext_password})
+    else:
+        return render(request, "emp/add_emp.html", {})
 
 @login_required
 def delete_emp(request,emp_id):
@@ -108,45 +155,82 @@ def assign_task(request):
         form = TaskAssignForm()
     return render(request, 'emp/assign_task.html', {'form': form})
 
-# @login_required
-# def my_tasks(request):
-#     tasks = Task.objects.filter(assignee=request.user.employee)
-#     return render(request, 'emp/my_tasks.html', {'tasks': tasks})
 
-
-# @login_required
-# def my_tasks(request):
-#     try:
-#         # Retrieve the logged-in user's employee profile
-#         employee = request.user.employee
-#         # Filter tasks by the employee
-#         tasks = Task.objects.filter(assignee=employee)
-#     except AttributeError:
-#         # If the user doesn't have an employee profile, handle it appropriately
-#         tasks = []
-#         # You might want to redirect the user or show an error message
-#         # For now, let's just print an error message
-#         print("This user does not have an associated employee profile.")
-    
-#     return render(request, 'emp/my_tasks.html', {'tasks': tasks})
 @login_required
 def my_tasks(request):
-    # Get all tasks along with the assignee and their progress
-    all_tasks_with_progress = []
-    all_tasks = Task.objects.select_related('assignee').all()  # Prefetch related assignee data
+    user_emp = request.user.emp if hasattr(request.user, 'emp') else None
 
-    for task in all_tasks:
-        completed = 'Completed' if task.status == 'Completed' else 'In Progress'  # Or however you mark completion
-        progress = '100%' if task.status == 'Completed' else 'In Progress'  # Assuming binary completion, not partial
-        all_tasks_with_progress.append({
-            'task': task,
-            'assignee': task.assignee,
-            'progress': progress,
-            'status': completed
-        })
+    if request.method == 'POST':
+        task_id = request.POST.get('task_id')
+        new_status = request.POST.get('status')
+        task = Task.objects.get(id=task_id, assignee=user_emp)  # Ensure the task belongs to the user
+        task.status = new_status
+        task.save()
+        return HttpResponseRedirect(request.path)  # Reload the page
 
-    context = {'tasks_with_progress': all_tasks_with_progress}
+    tasks = Task.objects.filter(assignee=user_emp).select_related('assignee')
+    # Assuming you have predefined statuses, for example, ['Not Started', 'In Progress', 'Completed']
+    status_to_progress = {
+        'Not Started': 0,
+        'In Progress': 50,  # Arbitrary value, adjust based on your needs
+        'Completed': 100
+    }
+
+    tasks_with_progress = [{
+        'task': task,
+        'assignee': task.assignee,
+        'progress': status_to_progress.get(task.status, 0),  # Default to 0% if status unknown
+        'status': task.status
+    } for task in tasks]
+
+    context = {
+        'tasks_with_progress': tasks_with_progress,
+        'user_emp': user_emp,
+    }
     return render(request, 'emp/my_tasks.html', context)
+
+@login_required
+def hr_task_overview(request):
+    # Check if the user is in the HR group
+    if not request.user.groups.filter(name='HR').exists():
+        return redirect('some_other_view')  # Redirect to a safe page if the user is not HR
+
+    # Fetch all tasks
+    tasks = Task.objects.select_related('assignee').all()  # Using select_related to optimize database queries
+
+    context = {
+        'tasks': tasks,
+    }
+
+    return render(request, 'emp/hr_task_overview.html', context)
+
+@login_required
+def emp_dashboard(request):
+    user_emp = request.user.emp if hasattr(request.user, 'emp') else None
+    # Get all tasks for the employee
+    tasks = Task.objects.filter(assignee=user_emp).select_related('assignee')
+    
+    # Calculate task progress
+    task_progress = {
+        'Not Started': tasks.filter(status='Not Started').count(),
+        'In Progress': tasks.filter(status='In Progress').count(),
+        'Completed': tasks.filter(status='Completed').count(),
+    }
+
+    # Calculate percentages for each status
+    total_tasks = sum(task_progress.values())
+    task_progress_percentage = {status: (count / total_tasks * 100 if total_tasks > 0 else 0) for status, count in task_progress.items()}
+
+    # Get completed tasks
+    completed_tasks = tasks.filter(status='Completed')
+
+    context = {
+        'employee': user_emp,
+        'task_progress': task_progress_percentage.items(),
+        'completed_tasks': completed_tasks,
+    }
+
+    return render(request, 'emp/emp_dashboard.html', context)
 
 
 # @login_required
@@ -165,36 +249,19 @@ def custom_login(request):
     else:
         return render(request, 'emp/login.html')
 
-# @login_required
-# def update_task_status(request, task_id):
-#     if request.method == 'POST':
-#         task = get_object_or_404(Task, pk=task_id, assignee=request.user)
-#         form = TaskUpdateForm(request.POST, instance=task)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, 'Task status updated.')
-#             return redirect('my_tasks')
-#         else:
-#             messages.error(request, 'Error updating task status.')
-#     else:
-#         form = TaskUpdateForm()
 
-#     return redirect('my_tasks')
-# @login_required
-# def update_task_status(request, task_id):
-#     task = get_object_or_404(Task, pk=task_id, assignee=request.user.employee)  # This should reference the employee, not user directly
-#     if request.method == 'POST':
-#         form = TaskUpdateForm(request.POST, instance=task)
-#         if form.is_valid():
-#             form.save()
-#             messages.success(request, 'Task status updated.')
-#             return redirect('emp:my_tasks')
-#         else:
-#             messages.error(request, 'Error updating task status.')
-#     else:
-#         form = TaskUpdateForm(instance=task)  # Pass the instance for GET request as well
+    
+@login_required
+def update_task_status(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    if request.method == 'POST':
+        form = TaskUpdateForm(request.POST, instance=task)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Task status updated successfully.')
+        else:
+            messages.error(request, 'Error updating task status.')
+    return redirect('emp:my_tasks')
 
-#     # If you have a specific template for updating task status, render it
-#     # return render(request, 'emp/update_task_status.html', {'form': form, 'task': task})
 
-#     return redirect('emp:my_tasks')  # Redirect if not a POST request or if the form is not valid
+

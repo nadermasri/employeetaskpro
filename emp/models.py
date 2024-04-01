@@ -5,9 +5,9 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models
 # VERSION1
-class Employee(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    # other fields...
+# class Employee(models.Model):
+#     user = models.OneToOneField(User, on_delete=models.CASCADE)
+#     # other fields...
 
 
 
@@ -28,18 +28,18 @@ class Emp(models.Model):
     address = models.CharField(max_length=100, null=True)
     status=models.BooleanField(default=True)
     department=models.CharField(max_length=200, null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True)
     
     def __str__(self):
         return self.firstname + ' ' +self.fathername + ' '+self.lastname + ' '
     
 class Task(models.Model):
-    # assignee = models.ForeignKey(Emp, on_delete=models.CASCADE, related_name='assigned_tasks')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     assignee = models.ForeignKey(Emp, on_delete=models.CASCADE, related_name='tasks')
     deadline = models.DateTimeField(null=True, blank=True)
     urgency = models.CharField(max_length=50, choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')], default='Low')
-    status = models.CharField(max_length=50, choices=[('Pending', 'Pending'), ('In Progress', 'In Progress'), ('Completed', 'Completed')], default='Pending')
+    status = models.CharField(max_length=50, choices=[('Not Started', 'Not Started'), ('In Progress', 'In Progress'), ('Completed', 'Completed')], default='Not Started')
     date_created = models.DateTimeField(default=timezone.now)
     date_updated = models.DateTimeField(auto_now=True)
 

@@ -25,28 +25,31 @@
         </thead>
         <tbody>
             {% for tp in tasks_with_progress %}
+            {% if tp.task.status != "Completed" %}
             <tr>
-                <td>{{ tp.task.name }}</td>
+                <td>{{ tp.task.title }}</td>
                 <td>{{ tp.task.description }}</td>
                 <td>{{ tp.assignee.firstname }} {{ tp.assignee.lastname }}</td>
                 <td>{{ tp.task.deadline|date:"D, d M Y H:i" }}</td>
                 <td>
-                    {% if request.user == tp.assignee %}
-                    <form method="post" action="{% url 'update_task_status' tp.task.id %}">
+                    {% if request.user.emp == tp.assignee %}
+                    <form method="post" action="">
                         {% csrf_token %}
+                        <input type="hidden" name="task_id" value="{{ tp.task.id }}">
                         <select name="status" onchange="this.form.submit()">
-                            <option value="{{ tp.task.status }}" selected>{{ tp.task.status }}</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="Almost Done">Almost Done</option>
-                            <option value="Completed">Completed</option>
+                            <option value="Not Started" {% if tp.status == "Not Started" %}selected{% endif %}>Not Started</option>
+                            <option value="In Progress" {% if tp.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                            <option value="Completed" {% if tp.status == "Completed" %}selected{% endif %}>Completed</option>
                         </select>
                     </form>
+                    
                     {% else %}
-                    {{ tp.task.status }}
+                    {{ tp.status }}
                     {% endif %}
                 </td>
                 <td>{{ tp.progress }}%</td>
             </tr>
+            {% endif %}
             {% empty %}
             <tr>
                 <td colspan="6" class="text-center">No tasks assigned.</td>
