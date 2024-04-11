@@ -1,12 +1,12 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
-from .models import Emp, Task
-from .forms import TaskAssignForm
+from .models import Emp, Task, WhistleblowingCase, CaseConversation
+from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
 from django.shortcuts import get_object_or_404, redirect
-from .forms import TaskUpdateForm
+from .forms import TaskUpdateForm, WhistleblowingForm
 from django.contrib import messages
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password
@@ -22,7 +22,7 @@ def emp_home(request):
 
     emps = Emp.objects.all()
     for emp in emps:
-        tasks = Task.objects.filter(assignee=emp)
+        tasks = Task.objects.filter(assignees=emp)
         completed_tasks = tasks.filter(status="Completed").count()
         total_tasks = tasks.count()
         progress = 100 * completed_tasks / total_tasks if total_tasks > 0 else 0
@@ -149,8 +149,9 @@ def assign_task(request):
     if request.method == 'POST':
         form = TaskAssignForm(request.POST)
         if form.is_valid():
-            form.save()
-        return redirect("/emp/home/")  # Use the 'emp:' namespace prefix
+            task = form.save()
+            # The call to form.save_m2m() is not needed as form.save() already commits the data
+            return redirect("/emp/home/")  # Adjust the redirect as needed
     else:
         form = TaskAssignForm()
     return render(request, 'emp/assign_task.html', {'form': form})
@@ -163,23 +164,23 @@ def my_tasks(request):
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         new_status = request.POST.get('status')
-        task = Task.objects.get(id=task_id, assignee=user_emp)  # Ensure the task belongs to the user
+        # Ensure the task belongs to the user among assignees
+        task = get_object_or_404(Task, id=task_id, assignees=user_emp)
         task.status = new_status
         task.save()
-        return HttpResponseRedirect(request.path)  # Reload the page
+        return HttpResponseRedirect(request.path_info)  # Use path_info to reload the same page
 
-    tasks = Task.objects.filter(assignee=user_emp).select_related('assignee')
-    # Assuming you have predefined statuses, for example, ['Not Started', 'In Progress', 'Completed']
+    tasks = Task.objects.filter(assignees=user_emp)  # Retrieve tasks where the user is one of the assignees
     status_to_progress = {
         'Not Started': 0,
-        'In Progress': 50,  # Arbitrary value, adjust based on your needs
+        'In Progress': 50, 
         'Completed': 100
     }
 
     tasks_with_progress = [{
         'task': task,
-        'assignee': task.assignee,
-        'progress': status_to_progress.get(task.status, 0),  # Default to 0% if status unknown
+        'assignees': task.assignees.all(),  # .all() is used to get all related Emp objects
+        'progress': status_to_progress.get(task.status, 0),  
         'status': task.status
     } for task in tasks]
 
@@ -189,27 +190,21 @@ def my_tasks(request):
     }
     return render(request, 'emp/my_tasks.html', context)
 
+
 @login_required
 def hr_task_overview(request):
-    # Check if the user is in the HR group
     if not request.user.groups.filter(name='HR').exists():
-        return redirect('some_other_view')  # Redirect to a safe page if the user is not HR
+        return redirect('emp:emp_home')  # Adjust the redirect as needed
 
-    # Fetch all tasks
-    tasks = Task.objects.select_related('assignee').all()  # Using select_related to optimize database queries
-
-    context = {
-        'tasks': tasks,
-    }
-
+    tasks = Task.objects.all().prefetch_related('assignees')
+    context = {'tasks': tasks}
     return render(request, 'emp/hr_task_overview.html', context)
+
 
 @login_required
 def emp_dashboard(request):
     user_emp = request.user.emp if hasattr(request.user, 'emp') else None
-    # Get all tasks for the employee
-    tasks = Task.objects.filter(assignee=user_emp).select_related('assignee')
-    
+    tasks = Task.objects.filter(assignees=user_emp)  # Adjusted to filter with assignees M2M field
     # Calculate task progress
     task_progress = {
         'Not Started': tasks.filter(status='Not Started').count(),
@@ -264,4 +259,55 @@ def update_task_status(request, task_id):
     return redirect('emp:my_tasks')
 
 
+@login_required
+def submit_whistleblowing(request):
+    if request.method == 'POST':
+        form = WhistleblowingForm(request.POST, request.FILES)
+        if form.is_valid():
+            case = form.save(commit=False)
+            case.submitted_by = request.user
+            case.save()
+            form.save_m2m()
+            messages.success(request, 'Whistleblowing case submitted successfully.')
+            return redirect('emp:whistleblowing_cases_overview')
+    else:
+        form = WhistleblowingForm()
+    return render(request, 'emp/submit_whistleblowing.html', {'form': form})
 
+@login_required
+def whistleblowing_cases_overview(request):
+    if request.user.groups.filter(name='HR').exists():
+        cases = WhistleblowingCase.objects.all()  # HR can see all cases
+    else:
+        cases = WhistleblowingCase.objects.filter(submitted_by=request.user)  # Others see their own cases
+    return render(request, 'emp/whistleblowing_cases_overview.html', {'cases': cases})
+
+@login_required
+def update_whistleblowing_case(request, case_id):
+    case = get_object_or_404(WhistleblowingCase, id=case_id)
+    if request.user.groups.filter(name='HR').exists() or case.submitted_by == request.user:
+        if request.method == 'POST':
+            case.status = request.POST.get('status')
+            case.decision_description = request.POST.get('decision_description', '')
+            case.save()
+            messages.success(request, 'Whistleblowing case updated successfully.')
+            return redirect('emp:whistleblowing_cases_overview')
+        return render(request, 'emp/update_whistleblowing_case.html', {'case': case})
+    else:
+        return redirect('emp:whistleblowing_cases_overview')  # Redirect if not authorized
+
+@login_required
+def case_conversation(request, case_id):
+    case = get_object_or_404(WhistleblowingCase, id=case_id)
+    if request.method == 'POST':
+        form = ConversationForm(request.POST)
+        if form.is_valid():
+            conversation = form.save(commit=False)
+            conversation.case = case
+            conversation.sender = request.user
+            conversation.save()
+            return redirect('emp:case_conversation', case_id=case_id)
+    else:
+        form = ConversationForm()
+    conversations = case.conversations.all()
+    return render(request, 'emp/case_conversation.html', {'form': form, 'conversations': conversations, 'case': case})

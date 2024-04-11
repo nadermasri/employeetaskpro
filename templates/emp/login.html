@@ -40,14 +40,6 @@
     <form method="post" action="{% url 'custom_login' %}" class="login-form">
         {% csrf_token %}
         <div class="form-group">
-            <label for="user_type">User Type:</label>
-            <select id="user_type" name="user_type" class="user-select">
-                <option value="EMP">Employee</option>
-                <option value="HR">HR Manager</option>
-                <option value="Manager">Manager/Team Lead</option>
-            </select>
-        </div>
-        <div class="form-group">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
         </div>

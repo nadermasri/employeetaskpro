@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Update Whistleblowing Case</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
+          rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
+          crossorigin="anonymous">
+</head>
+<body>
+{% include 'emp/navbar.html' %}
+<div class="container my-4">
+    <h2>Update Whistleblowing Case #{{ case.id }}</h2>
+
+    {% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+        <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="status" class="form-label">Status</label>
+            <select id="status" name="status" class="form-select">
+                {% for choice in case.STATUS_CHOICES %}
+                <option value="{{ choice.0 }}" {% if case.status == choice.0 %}selected{% endif %}>{{ choice.1 }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="decision_description" class="form-label">Decision Description (Optional)</label>
+            <textarea id="decision_description" name="decision_description" class="form-control" placeholder="Provide any decision details or additional comments here.">{{ case.decision_description }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Update Case</button>
+    </form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.0/dist/umd/popper.min.js" integrity="sha384-5Sla5K1tE0FVzNtBtHzCSPzFM/YYQ0oacPFb7IoSZJ1lwTjJkC/P2cqOW3Pp5Rwp" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
+</body>
+</html>

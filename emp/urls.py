@@ -15,6 +15,11 @@ urlpatterns = [
     path("my-tasks/", my_tasks, name='my_tasks'),
     path('hr-tasks/', hr_task_overview, name='hr_task_overview'),
     path('emp-dashboard/', emp_dashboard, name='emp_dashboard'),
+    path('submit-whistleblowing/', submit_whistleblowing, name='submit_whistleblowing'),
+    path('whistleblowing-cases/', whistleblowing_cases_overview, name='whistleblowing_cases_overview'),
+    path('update-whistleblowing-case/<int:case_id>/', update_whistleblowing_case, name='update_whistleblowing_case'),
+    path('case-conversation/<int:case_id>/', case_conversation, name='case_conversation'),
+
 ]
 
 
