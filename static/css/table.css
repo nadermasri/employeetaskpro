@@ -1,0 +1,120 @@
+/* Basic reset and typography settings */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Card styling */
+.card {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+.card-body {
+    padding: 20px;
+}
+
+/* Table styling */
+.table {
+    width: 100%;
+    margin-bottom: 1rem;
+    color: #212529;
+}
+
+.table th, 
+.table td {
+    padding: 0.75rem;
+    vertical-align: top;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Enhancing the header */
+.table thead th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #dee2e6;
+    background-color: #e9ecef;
+    color: #495057;
+    font-weight: bold;
+}
+
+/* Hover effect on rows */
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+/* Zebra striping for rows */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Button styling */
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: 0.2rem;
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.btn-danger:hover {
+    color: #fff;
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.btn-success {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-success:hover {
+    color: #fff;
+    background-color: #218838;
+    border-color: #1e7e34;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 10px;
+    }
+}
+
+/* Existing styles ... */
+
+/* Card adjustments for overflow */
+.card {
+    overflow-x: auto;  /* Allows horizontal scrolling */
+}
+
+/* Enhancing table responsiveness */
+.table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;  /* Allows horizontal scrolling within the table if it's too wide */
+}
+
+/* Optional: Minimum width for each table cell to prevent excessive squeezing */
+.table th, .table td {
+    min-width: 120px;
+}
+
+/* Improve visual hierarchy and readability */
+.table thead th {
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+/* Zebra striping more subtle */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.03);
+}
