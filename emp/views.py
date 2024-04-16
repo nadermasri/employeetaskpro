@@ -12,6 +12,8 @@ from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password
 from datetime import datetime
 from django.http import HttpResponseRedirect
+from django.db.models import Case, When
+from django.http import JsonResponse
 
 
 @login_required
@@ -122,6 +124,7 @@ def update_emp(request,emp_id):
         'emp':emp
     })
 
+
 @login_required
 def do_update_emp(request, emp_id):
     if request.method == "POST":
@@ -160,6 +163,7 @@ def assign_task(request):
 @login_required
 def my_tasks(request):
     user_emp = request.user.emp if hasattr(request.user, 'emp') else None
+    sort = request.GET.get('sort', 'deadline')  # Default sorting by deadline
 
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
@@ -171,6 +175,16 @@ def my_tasks(request):
         return HttpResponseRedirect(request.path_info)  # Use path_info to reload the same page
 
     tasks = Task.objects.filter(assignees=user_emp)  # Retrieve tasks where the user is one of the assignees
+    if sort == 'urgency':
+        tasks = tasks.order_by(Case(
+            When(urgency='High', then=1),
+            When(urgency='Medium', then=2),
+            When(urgency='Low', then=3),
+            default=4
+        ))
+    else:  # Default sort by deadline
+        tasks = tasks.order_by('deadline')
+
     status_to_progress = {
         'Not Started': 0,
         'In Progress': 50, 
@@ -355,3 +369,19 @@ def delete_task(request, task_id):
         messages.error(request, "You do not have permission to delete tasks.")
     return redirect('emp:hr_task_overview')  # Redirect to the tasks overview page
 
+@login_required
+def calendar_view(request):
+    return render(request, 'emp/calendar.html')
+
+@login_required
+def event_data(request):
+    user_emp = request.user.emp if hasattr(request.user, 'emp') else None
+    tasks = Task.objects.filter(assignees=user_emp)  # Retrieve tasks where the user is one of the assignees
+
+    events = [{
+        'title': task.title,
+        'start': task.deadline.strftime('%Y-%m-%dT%H:%M:%S'),  # Ensure 'deadline' is the correct field name
+        'allDay': True  # Assuming these are all-day events
+    } for task in tasks]
+    
+    return JsonResponse(events, safe=False)

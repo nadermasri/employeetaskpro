@@ -22,6 +22,8 @@ urlpatterns = [
     path('task-feedback/<int:task_id>/', update_task_feedback, name='task_feedback'),
     path('add-task-feedback/<int:task_id>/', add_task_feedback, name='add_task_feedback'),
     path('delete-task/<int:task_id>/', delete_task, name='delete_task'),
+    path('calendar/', calendar_view, name='calendar-view'), 
+    path('api/events/', event_data, name='api-events'), 
 
 
 

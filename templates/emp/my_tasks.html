@@ -13,6 +13,13 @@
     {% include 'emp/navbar.html' %}
     <div class="container my-4">
         <h2>Task Overview</h2>
+        <form method="get" action="">
+            <label for="sort">Sort by:</label>
+            <select name="sort" onchange="this.form.submit()">
+                <option value="deadline" {% if current_sort == 'deadline' %}selected{% endif %}>Deadline</option>
+                <option value="urgency" {% if current_sort == 'urgency' %}selected{% endif %}>Urgency</option>
+            </select>
+        </form>           
         <table class="table">
             <thead>
                 <tr>
@@ -20,6 +27,7 @@
                     <th>Description</th>
                     <th>Assignees</th>
                     <th>Deadline</th>
+                    <th>Priority</th>
                     <th>Status</th>
                     <th>Progress</th>
                     <th>Feedback/Inquiries</th>
@@ -37,6 +45,7 @@
                         {% endfor %}
                     </td>
                     <td>{{ tp.task.deadline|date:"D, d M Y H:i" }}</td>
+                    <td>{{ tp.task.urgency }}</td> 
                     <td>
                         <form method="post" action="{% url 'emp:update_task_status' tp.task.id %}">
                             {% csrf_token %}
