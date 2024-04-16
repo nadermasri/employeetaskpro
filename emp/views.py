@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
-from .models import Emp, Task, WhistleblowingCase, CaseConversation
+from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback
 from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
@@ -151,7 +151,7 @@ def assign_task(request):
         if form.is_valid():
             task = form.save()
             # The call to form.save_m2m() is not needed as form.save() already commits the data
-            return redirect("/emp/home/")  # Adjust the redirect as needed
+            return redirect('emp:hr_task_overview')  # Adjust the redirect as needed
     else:
         form = TaskAssignForm()
     return render(request, 'emp/assign_task.html', {'form': form})
@@ -253,10 +253,12 @@ def update_task_status(request, task_id):
         form = TaskUpdateForm(request.POST, instance=task)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Task status updated successfully.')
+            messages.success(request, 'Task status and feedback updated successfully.')
         else:
-            messages.error(request, 'Error updating task status.')
-    return redirect('emp:my_tasks')
+            messages.error(request, 'Error updating task status and feedback.')
+    else:
+        form = TaskUpdateForm(instance=task)  # Add this line to handle GET request
+    return render(request, 'emp/update_task_status.html', {'form': form, 'task': task})
 
 
 @login_required
@@ -311,3 +313,45 @@ def case_conversation(request, case_id):
         form = ConversationForm()
     conversations = case.conversations.all()
     return render(request, 'emp/case_conversation.html', {'form': form, 'conversations': conversations, 'case': case})
+
+# views.py
+@login_required
+def update_task_feedback(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    if request.user.groups.filter(name='Manager').exists():  # Ensure only managers can update feedback
+        if request.method == 'POST':
+            feedback = request.POST.get('feedback', '').strip()
+            task.feedback = feedback
+            task.save()
+            messages.success(request, 'Feedback updated successfully.')
+        else:
+            messages.error(request, 'Invalid request method.')
+    else:
+        messages.error(request, 'Unauthorized access.')
+    return redirect('emp:hr_task_overview')  # Redirect back to the tasks overview
+
+
+@login_required
+def add_task_feedback(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    if request.method == 'POST':
+        feedback_content = request.POST.get('feedback')
+        if feedback_content:
+            # Assuming Feedback is your model name and it has a task ForeignKey, content field, and created_by ForeignKey to User
+            Feedback.objects.create(task=task, content=feedback_content, created_by=request.user)
+            messages.success(request, 'Feedback added successfully.')
+        else:
+            messages.error(request, 'Feedback content cannot be empty.')
+    return redirect('emp:hr_task_overview')
+
+
+@login_required
+def delete_task(request, task_id):
+    if request.user.groups.filter(name='HR').exists():  # Check if the user is in HR
+        task = Task.objects.get(pk=task_id)
+        task.delete()
+        messages.success(request, "Task deleted successfully.")
+    else:
+        messages.error(request, "You do not have permission to delete tasks.")
+    return redirect('emp:hr_task_overview')  # Redirect to the tasks overview page
+

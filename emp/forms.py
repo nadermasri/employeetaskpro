@@ -21,7 +21,7 @@ class TaskAssignForm(forms.ModelForm):
 class TaskUpdateForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['status']
+        fields = ['status', 'feedback']  # Add 'feedback' here
 
     def __init__(self, *args, **kwargs):
         super(TaskUpdateForm, self).__init__(*args, **kwargs)
@@ -29,6 +29,8 @@ class TaskUpdateForm(forms.ModelForm):
             'class': 'form-select',
             'onchange': 'this.form.submit()',
         })
+        self.fields['feedback'].widget = forms.Textarea(attrs={'rows': 3})  # Add this line to customize the textarea
+
 
 class WhistleblowingForm(forms.ModelForm):
     class Meta:

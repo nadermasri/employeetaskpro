@@ -19,6 +19,11 @@ urlpatterns = [
     path('whistleblowing-cases/', whistleblowing_cases_overview, name='whistleblowing_cases_overview'),
     path('update-whistleblowing-case/<int:case_id>/', update_whistleblowing_case, name='update_whistleblowing_case'),
     path('case-conversation/<int:case_id>/', case_conversation, name='case_conversation'),
+    path('task-feedback/<int:task_id>/', update_task_feedback, name='task_feedback'),
+    path('add-task-feedback/<int:task_id>/', add_task_feedback, name='add_task_feedback'),
+    path('delete-task/<int:task_id>/', delete_task, name='delete_task'),
+
+
 
 ]
 

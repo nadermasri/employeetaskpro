@@ -1,3 +1,4 @@
+{% load static %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -20,6 +21,8 @@
                 <th>Assignees</th>
                 <th>Deadline</th>
                 <th>Status</th>
+                <th>Feedback</th>.
+                <th>Action</th> 
             </tr>
         </thead>
         <tbody>
@@ -34,15 +37,38 @@
                 </td>
                 <td>{{ task.deadline|date:"D, d M Y" }}</td>
                 <td>{{ task.status }}</td>
+                <td>
+                    <!-- List existing feedbacks -->
+                    <ul>
+                        {% for feedback in task.feedbacks.all %}
+                        <li><strong>{{ feedback.created_by.username }}:</strong> {{ feedback.content }} ({{ feedback.created_at|date:"Y-m-d H:i" }})</li>
+                        {% empty %}
+                        <li>No feedback yet.</li>
+                        {% endfor %}
+                    </ul>
+                    <!-- Feedback form -->
+                    <form action="{% url 'emp:add_task_feedback' task.id %}" method="post">
+                        {% csrf_token %}
+                        <textarea name="feedback" class="form-control mb-2" placeholder="Enter feedback"></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm">Add Feedback</button>
+                    </form>
+                </td>
+                <td>
+                    <!-- Delete button -->
+                    <form action="{% url 'emp:delete_task' task.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5" class="text-center">No tasks available.</td>
+                <td colspan="6" class="text-center">No tasks available.</td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script></body>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

@@ -22,6 +22,7 @@
                     <th>Deadline</th>
                     <th>Status</th>
                     <th>Progress</th>
+                    <th>Feedback/Inquiries</th>
                 </tr>
             </thead>
             <tbody>
@@ -48,6 +49,22 @@
                         </form>
                     </td>
                     <td>{{ tp.progress }}%</td>
+                    <td>
+                        <!-- List existing feedbacks -->
+                        <ul>
+                            {% for feedback in tp.task.feedbacks.all %}
+                            <li><strong>{{ feedback.created_by.username }}:</strong> {{ feedback.content }} ({{ feedback.created_at|date:"Y-m-d H:i" }})</li>
+                            {% empty %}
+                            <li>No feedback yet.</li>
+                            {% endfor %}
+                        </ul>
+                        <!-- Feedback form -->
+                        <form action="{% url 'emp:add_task_feedback' tp.task.id %}" method="post">
+                            {% csrf_token %}
+                            <textarea name="feedback" class="form-control mb-2" placeholder="Enter Inquiry"></textarea>
+                            <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+                        </form>
+
                 </tr>
                 {% empty %}
                 <tr>

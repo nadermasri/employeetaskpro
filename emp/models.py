@@ -33,6 +33,8 @@ class Task(models.Model):
    
     assignees = models.ManyToManyField(Emp, related_name='tasks')
     deadline = models.DateTimeField(null=True, blank=True)
+    feedback = models.TextField(blank=True, null=True)  
+
     urgency = models.CharField(
         max_length=50, 
         choices=[('Low', 'Low'), ('Medium', 'Medium'), ('High', 'High')], 
@@ -88,3 +90,12 @@ class CaseConversation(models.Model):
 
     def __str__(self):
         return f"Conversation for Case #{self.case.id} by {self.sender.username}"
+    
+class Feedback(models.Model):
+    task = models.ForeignKey(Task, related_name='feedbacks', on_delete=models.CASCADE)
+    content = models.TextField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Feedback by {self.created_by.username} on {self.created_at.strftime('%Y-%m-%d %H:%M')}"
