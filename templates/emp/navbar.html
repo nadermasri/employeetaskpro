@@ -66,10 +66,11 @@
                 </ul>
                 <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
                     {% if request.user.is_authenticated %}
+                    
                     <li class="nav-item">
                         <form action="{% url 'logout' %}" method="post">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-link nav-link" style="padding: 0; border: none; background: none;">Logout</button>
+                            <button type="submit" class="btn btn-link nav-link" style="padding: 0; border: none; background: none; margin-right: 20px;">Logout</button>
                         </form>
                     </li>
                     {% else %}
@@ -78,6 +79,11 @@
                     </li>
                     
                     {% endif %}
+                    <li class="nav-item">
+                        <span class="navbar-text mr-3">
+                        Hello, {{ request.user.username }}
+                        </span>
+                    </li>
                     
                 </ul>
             </div>
