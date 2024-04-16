@@ -47,7 +47,7 @@
                     <td>{{ tp.task.deadline|date:"D, d M Y H:i" }}</td>
                     <td>{{ tp.task.urgency }}</td> 
                     <td>
-                        <form method="post" action="{% url 'emp:update_task_status' tp.task.id %}">
+                        <form method="post" action="{% url 'emp:my_tasks' %}">
                             {% csrf_token %}
                             <input type="hidden" name="task_id" value="{{ tp.task.id }}">
                             <select name="status" onchange="this.form.submit()">
