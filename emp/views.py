@@ -201,6 +201,7 @@ def my_tasks(request):
     context = {
         'tasks_with_progress': tasks_with_progress,
         'user_emp': user_emp,
+        'current_sort': sort,
     }
     return render(request, 'emp/my_tasks.html', context)
 
