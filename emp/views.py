@@ -17,6 +17,7 @@ from django.http import JsonResponse
 from django.forms import inlineformset_factory
 from django.forms import formset_factory, modelformset_factory
 from django.db.models import Count
+from django.db.models import Sum
 
 @login_required
 def emp_home(request):
@@ -183,18 +184,15 @@ def assign_task(request, task_id):
         selected_emp_ids = request.POST.getlist('employees')
         weights = request.POST.getlist('weights')
 
-        total_weight = sum(int(weight) for weight in weights)
+        # Parse the weights to integers and sum them
+        new_weights = sum(int(weight) for weight in weights)
+        # Sum the weights of existing assignees
+        existing_weights_sum = existing_assignees.aggregate(Sum('weight'))['weight__sum'] or 0
 
-        if total_weight > 100:
-            messages.error(request, "The sum of weights cannot exceed 100.")
+        # Check if total weight including existing assignees exceeds 100
+        if new_weights + existing_weights_sum > 100:
+            messages.error(request, "The sum of weights including existing assignees cannot exceed 100.")
             return redirect('emp:assign_task', task_id=task_id)
-
-        # Update existing assignees' weights
-        for assignee in existing_assignees:
-            weight = request.POST.get(f"existing_weight_{assignee.id}")  # Get weight from the form
-            if weight:
-                assignee.weight = weight
-                assignee.save()
 
         # Create new assignees
         for emp_id, weight in zip(selected_emp_ids, weights):
@@ -216,6 +214,20 @@ def update_weights(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
 
     if request.method == 'POST':
+        # Collect all the new weights from the form
+        weight_data = {
+            assignee.id: request.POST.get(f"existing_weight_{assignee.id}", 0)
+            for assignee in TaskAssignee.objects.filter(task=task)
+        }
+        
+        # Convert to integers and sum them, treating empty strings as zeros
+        total_weight = sum(int(weight) if weight.isdigit() else 0 for weight in weight_data.values())
+
+        # Check if the total weight exceeds 100
+        if total_weight > 100:
+            messages.error(request, "The sum of weights cannot exceed 100.")
+            return redirect('emp:assign_task',task_id=task_id)
+        
         existing_assignees = TaskAssignee.objects.filter(task=task)
         for assignee in existing_assignees:
             weight = request.POST.get(f"existing_weight_{assignee.id}")
