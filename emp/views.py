@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
-from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback, TaskAssignee,Sprint
-from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm, TaskForm,SprintForm
+from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback, TaskAssignee,Sprint, Message
+from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm, TaskForm,SprintForm, MessageForm
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
@@ -18,6 +18,11 @@ from django.forms import inlineformset_factory
 from django.forms import formset_factory, modelformset_factory
 from django.db.models import Count
 from django.db.models import Sum
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import json
+
+
 
 @login_required
 def emp_home(request):
@@ -514,3 +519,52 @@ def add_sprint(request):
     else:
         form = SprintForm()
     return render(request, 'emp/add_sprint.html', {'form': form})
+
+@login_required
+def messaging(request):
+    contacts = User.objects.exclude(id=request.user.id)  # List other users
+    messages = Message.objects.filter(recipient=request.user).order_by('-timestamp')
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            message = form.save(commit=False)
+            message.sender = request.user
+            message.save()
+            return redirect('emp:messaging')  # Redirect back to the same messaging view
+    else:
+        form = MessageForm()
+    return render(request, 'emp/messaging.html', {'messages': messages, 'contacts': contacts, 'form': form})
+
+@login_required
+def fetch_messages(request, user_id):
+    # This is a simple example, adapt it according to your Message model structure
+    messages = Message.objects.filter(
+        sender_id=user_id, recipient=request.user
+    ) | Message.objects.filter(
+        sender=request.user, recipient_id=user_id
+    )
+    messages = messages.order_by('timestamp')
+    # Serialize the messages into a JSON-friendly format
+    messages_data = [{'content': message.message, 'timestamp': message.timestamp.strftime('%Y-%m-%d %H:%M:%S')} for message in messages]
+    return JsonResponse(messages_data, safe=False)
+
+
+@login_required
+@csrf_exempt  # This is for demonstration purposes. In production, you should handle CSRF properly.
+@require_POST  # Ensure this view only accepts POST requests.
+def send_message(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        recipient_id = data.get('recipient')
+        message_text = data.get('message')
+        
+        # Assuming 'recipient_id' is the ID of the User model instance
+        recipient = User.objects.get(pk=recipient_id)
+        
+        # Create and save the new message
+        message = Message(sender=request.user, recipient=recipient, message=message_text)
+        message.save()
+        
+        # Return a response, e.g., the message ID and a success status
+        return JsonResponse({'id': message.id, 'status': 'success'})
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)

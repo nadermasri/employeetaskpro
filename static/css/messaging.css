@@ -1,0 +1,110 @@
+body {
+    background-color: #f8f9fa;
+  }
+  
+  .card {
+    box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
+  }
+  
+  .list-group-item-action {
+    cursor: pointer;
+  }
+  
+  .list-group-item-action:hover {
+    background-color: #f0f0f0;
+  }
+  
+
+  body, html {
+    height: 100%;
+    margin: 0;
+    font-size: 0.9rem;
+    background: #f8f9fa;
+}
+
+.contacts_body, .msg_card_body {
+    overflow-y: auto;
+}
+
+.contacts_body {
+    height: 450px;
+}
+
+.msg_card_body {
+    height: 400px;
+}
+
+.card {
+    border: none;
+}
+
+.contacts_card, .msg_card_body {
+    background: #ffffff;
+    box-shadow: 0px 0px 1px 1px #aaaaaa;
+}
+
+.search {
+    border-radius: 15px 0 0 15px;
+    background: #f8f9fa;
+    border: none;
+    line-height: 40px;
+    box-shadow: none;
+}
+
+.search:focus {
+    box-shadow: none;
+}
+
+.search_btn {
+    background: #ffffff;
+    border: none;
+    border-radius: 0 15px 15px 0;
+    cursor: pointer;
+}
+
+.contacts {
+    list-style: none;
+    padding: 0;
+}
+
+.contacts li {
+    padding: 10px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+
+.active, .contacts li:hover {
+    background: #eeeeee;
+}
+
+.user_img {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+}
+
+.online_icon {
+    width: 15px;
+    height: 15px;
+    background-color: #4cd137;
+    border-radius: 50%;
+    display: inline-block;
+    position: absolute;
+    top: 35px;
+    right: 30px;
+}
+
+.type_msg {
+    background: #f8f9fa;
+    border: none;
+    height: 60px;
+    overflow: hidden;
+    resize: none;
+}
+
+.send_btn {
+    background: #ffffff;
+    border: none;
+    cursor: pointer;
+    border-radius: 0 15px 15px 0;
+}

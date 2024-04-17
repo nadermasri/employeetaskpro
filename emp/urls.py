@@ -6,6 +6,10 @@ app_name = 'emp'
 urlpatterns = [
     path('update-task-status/<int:task_id>/', update_task_status, name='update_task_status'),
     path("home/", emp_home, name='emp_home'),
+    path('messages/', messaging, name='messaging'),  # New unified path
+    path('messages/fetch/<int:user_id>/', fetch_messages, name='fetch_messages'),
+    path('send-message/', send_message, name='send_message'),
+    path('fetch-messages/<int:user_id>/', fetch_messages, name='fetch_messages'),
     path('login/', custom_login, name='custom_login'),
     path("add-emp/", add_emp, name='add_emp'),
     path("delete-emp/<int:emp_id>", delete_emp, name='delete_emp'),
@@ -27,6 +31,7 @@ urlpatterns = [
     path('assign-task/<int:task_id>/', assign_task, name='assign_task'),  # URL for assigning a task
     path('update_weights/<int:task_id>/', update_weights, name='update_weights'),
     path('add-sprint/', add_sprint, name='add_sprint') # Add this line
+
 
 
 

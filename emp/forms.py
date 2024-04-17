@@ -1,7 +1,8 @@
 from django import forms
-from .models import Task, Emp, WhistleblowingCase, CaseConversation, TaskAssignee,Sprint
+from .models import Task, Emp, WhistleblowingCase, CaseConversation, TaskAssignee,Sprint, Message
 from django_select2 import forms as s2forms
 from django.forms import DateTimeInput
+from django.contrib.auth.models import User
 
 class SprintForm(forms.ModelForm):
     class Meta:
@@ -73,3 +74,10 @@ class ConversationForm(forms.ModelForm):
         model = CaseConversation
         fields = ['message']
 
+class MessageForm(forms.ModelForm):
+    recipient = forms.ModelChoiceField(queryset=User.objects.all())
+    message = forms.CharField(widget=forms.Textarea)
+
+    class Meta:
+        model = Message
+        fields = ['recipient', 'message']
