@@ -13,6 +13,14 @@
     {% include 'emp/navbar.html' %}
 
     <div id="calendar"></div>
+    <!-- Insert this inside your <body> tag in calendar.html -->
+        <!-- calendar.html -->
+        {% if request.user.groups.all.0.name == "HR" or request.user.groups.all.0.name == "Manager" %}
+        <div class="container mt-3 mb-3">
+            <a href="{% url 'emp:add_sprint' %}" class="btn btn-primary">+ Add Sprint</a>
+        </div>
+    {% endif %}
+
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5/main.min.js"></script>
     <script>

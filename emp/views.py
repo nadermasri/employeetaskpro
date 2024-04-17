@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
-from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback, TaskAssignee
-from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm, TaskForm
+from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback, TaskAssignee,Sprint
+from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm, TaskForm,SprintForm
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
@@ -444,15 +444,66 @@ def delete_task(request, task_id):
 def calendar_view(request):
     return render(request, 'emp/calendar.html')
 
+# @login_required
+# def event_data(request):
+#     user_emp = request.user.emp if hasattr(request.user, 'emp') else None
+#     # tasks = Task.objects.filter(assignees=user_emp)
+#     sprints = Sprint.objects.filter(employees=user_emp)
+
+#     # events = [
+#     #     {'title': task.title, 'start': task.deadline.strftime('%Y-%m-%dT%H:%M:%S'), 'allDay': True}
+#     #     for task in tasks
+#     # ]
+    
+#     events += [
+#         {'title': sprint.title, 'start': sprint.start_date.strftime('%Y-%m-%dT%H:%M:%S'),
+#          'end': sprint.end_date.strftime('%Y-%m-%dT%H:%M:%S'), 'allDay': True}
+#         for sprint in sprints
+#     ]
+#     if not events:
+#         return JsonResponse({'message': 'No events found'}, status=404)
+#     else:
+#         return JsonResponse(events, safe=False)
+
 @login_required
 def event_data(request):
-    user_emp = request.user.emp if hasattr(request.user, 'emp') else None
-    tasks = Task.objects.filter(assignees=user_emp)  # Retrieve tasks where the user is one of the assignees
+    # Check if the user is HR or Manager
+    user_groups = request.user.groups.values_list('name', flat=True)
+    is_hr_or_manager = any(group in user_groups for group in ['HR', 'Manager'])
 
-    events = [{
-        'title': task.title,
-        'start': task.deadline.strftime('%Y-%m-%dT%H:%M:%S'),  # Ensure 'deadline' is the correct field name
-        'allDay': True  # Assuming these are all-day events
-    } for task in tasks]
-    
+    # Get sprints for HR/Manager or specific employee
+    if is_hr_or_manager:
+        sprints = Sprint.objects.all()
+    else:
+        user_emp = request.user.emp if hasattr(request.user, 'emp') else None
+        if user_emp:
+            sprints = Sprint.objects.filter(employees=user_emp)
+        else:
+            return JsonResponse({'message': 'User has no associated employee or is not authorized to view all sprints.'}, status=403)
+
+    # Create events list from sprints
+    events = [
+        {'title': sprint.title, 'start': sprint.start_date.strftime('%Y-%m-%dT%H:%M:%S'),
+         'end': sprint.end_date.strftime('%Y-%m-%dT%H:%M:%S'), 'allDay': True}
+        for sprint in sprints
+    ]
+
+    # If no events found, send a 404 response
+    if not events:
+        return JsonResponse({'message': 'No events found'}, status=404)
+
+    # Send events as JSON response
     return JsonResponse(events, safe=False)
+
+
+
+@login_required
+def add_sprint(request):
+    if request.method == 'POST':
+        form = SprintForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('emp:calendar')  # Redirect to the calendar view where sprints are visible
+    else:
+        form = SprintForm()
+    return render(request, 'emp/add_sprint.html', {'form': form})

@@ -6,6 +6,8 @@ from django.contrib.auth.models import User
 from django.db import models
 
 # Create your models here.
+
+
 class Emp(models.Model):
     firstname=models.CharField(max_length=200)
     fathername=models.CharField(max_length=200)
@@ -97,3 +99,15 @@ class Feedback(models.Model):
 
     def __str__(self):
         return f"Feedback by {self.created_by.username} on {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+    
+
+class Sprint(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    tasks = models.ManyToManyField(Task)
+    employees = models.ManyToManyField(Emp)
+
+    def __str__(self):
+        return f"{self.title} ({self.start_date.strftime('%Y-%m-%d')} - {self.end_date.strftime('%Y-%m-%d')})"

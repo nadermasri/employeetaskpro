@@ -1,8 +1,17 @@
 from django import forms
-from .models import Task, Emp, WhistleblowingCase, CaseConversation, TaskAssignee
+from .models import Task, Emp, WhistleblowingCase, CaseConversation, TaskAssignee,Sprint
 from django_select2 import forms as s2forms
 from django.forms import DateTimeInput
 
+class SprintForm(forms.ModelForm):
+    class Meta:
+        model = Sprint
+        fields = ['title', 'description', 'start_date', 'end_date', 'tasks', 'employees']
+        widgets = {
+            'start_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'end_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'rows': 3}),
+        }
 class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
