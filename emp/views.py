@@ -270,6 +270,7 @@ def my_tasks(request):
         'user_emp': user_emp,
         'current_sort': sort,
     }
+
     return render(request, 'emp/my_tasks.html', context)
 
 
@@ -322,7 +323,12 @@ def custom_login(request):
         
         if user is not None:
             login(request, user)
-            return redirect('emp:emp_home')  # Note the 'emp:' namespace prefix
+            if user.groups.filter(name__in=['HR', 'Manager']).exists():
+                # Redirect HR or Managers to the employee home page
+                return redirect('emp:emp_home')
+            else:
+                # Redirect regular employees to their tasks page
+                return redirect('emp:my_tasks')
         else:
             # Return an 'invalid login' error message.
             return render(request, 'emp/login.html', {'error': 'Invalid username or password.'})

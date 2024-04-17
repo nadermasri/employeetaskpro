@@ -36,24 +36,24 @@
             <tbody>
                 {% for tp in tasks_with_progress %}
                 <tr>
-                    <td>{{ tp.task.title }}</td>
-                    <td>{{ tp.task.description }}</td>
+                    <td>{{ tp.task_assignee.task.title }}</td>
+                    <td>{{ tp.task_assignee.task.description }}</td>
                     <td>
-                        {% for assignee in tp.task.assignees.all %}
-                            {{ assignee.get_full_name }}
+                        {% for assignment in tp.task_assignee.task.taskassignee_set.all %}
+                            {{ assignment.emp.user.get_full_name }}
                             {% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </td>
-                    <td>{{ tp.task.deadline|date:"D, d M Y H:i" }}</td>
-                    <td>{{ tp.task.urgency }}</td> 
+                    <td>{{ tp.task_assignee.task.deadline|date:"D, d M Y H:i" }}</td>
+                    <td>{{ tp.task_assignee.task.urgency }}</td> 
                     <td>
                         <form method="post" action="{% url 'emp:my_tasks' %}">
                             {% csrf_token %}
-                            <input type="hidden" name="task_id" value="{{ tp.task.id }}">
+                            <input type="hidden" name="task_id" value="{{ tp.task_assignee.task.id }}">
                             <select name="status" onchange="this.form.submit()">
-                                <option value="Not Started" {% if tp.task.status == "Not Started" %}selected{% endif %}>Not Started</option>
-                                <option value="In Progress" {% if tp.task.status == "In Progress" %}selected{% endif %}>In Progress</option>
-                                <option value="Completed" {% if tp.task.status == "Completed" %}selected{% endif %}>Completed</option>
+                                <option value="Not Started" {% if tp.task_assignee.task.status == "Not Started" %}selected{% endif %}>Not Started</option>
+                                <option value="In Progress" {% if tp.task_assignee.task.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                                <option value="Completed" {% if tp.task_assignee.task.status == "Completed" %}selected{% endif %}>Completed</option>
                             </select>
                         </form>
                     </td>
@@ -61,18 +61,21 @@
                     <td>
                         <!-- List existing feedbacks -->
                         <ul>
-                            {% for feedback in tp.task.feedbacks.all %}
+                            {% for feedback in tp.task_assignee.task.feedbacks.all %}
                             <li><strong>{{ feedback.created_by.username }}:</strong> {{ feedback.content }} ({{ feedback.created_at|date:"Y-m-d H:i" }})</li>
                             {% empty %}
                             <li>No feedback yet.</li>
                             {% endfor %}
                         </ul>
-                        <!-- Feedback form -->
-                        <form action="{% url 'emp:add_task_feedback' tp.task.id %}" method="post">
+                        {% if tp.task_assignee.task.id %}
+                        <form action="{% url 'emp:add_task_feedback' tp.task_assignee.task.id %}" method="post">
                             {% csrf_token %}
                             <textarea name="feedback" class="form-control mb-2" placeholder="Enter Inquiry"></textarea>
                             <button type="submit" class="btn btn-primary btn-sm">Submit</button>
                         </form>
+                        {% else %}
+                        <div>Error: Task ID is missing or invalid, cannot submit feedback.</div>
+                        {% endif %}
 
                 </tr>
                 {% empty %}
