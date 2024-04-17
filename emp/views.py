@@ -26,25 +26,14 @@ def emp_home(request):
 
     # Iterate through each employee to calculate completed tasks count
     for emp in emps:
-        # Get tasks assigned to the employee
         tasks_assigned_to_employee = Task.objects.filter(taskassignee__emp=emp)
-
-        # Count completed tasks
         completed_tasks_count = tasks_assigned_to_employee.filter(status='Completed').count()
-
-        # Calculate total tasks count
         total_tasks_count = tasks_assigned_to_employee.count()
-
-        # Calculate progress percentage
         progress_percentage = (completed_tasks_count / total_tasks_count) * 100 if total_tasks_count > 0 else 0
-
-        # Assign progress percentage to the employee object
         emp.progress_percentage = progress_percentage
 
-    # Check if the user is HR or manager
     is_hr_or_manager = request.user.groups.filter(name__in=['HR', 'Manager']).exists()
 
-    # Check if the user is an employee
     is_employee = request.user.groups.filter(name='Employee').exists()
 
     context = {
@@ -141,9 +130,8 @@ def update_emp(request,emp_id):
 
 @login_required
 def do_update_emp(request, emp_id):
+    emp = get_object_or_404(Emp, pk=emp_id)
     if request.method == "POST":
-        emp = Emp.objects.get(pk=emp_id)
-
         emp.firstname = request.POST.get("firstname", emp.firstname)
         emp.fathername = request.POST.get("fathername", emp.fathername)
         emp.lastname = request.POST.get("lastname", emp.lastname)
@@ -153,14 +141,22 @@ def do_update_emp(request, emp_id):
         emp.phone = request.POST.get("phone", emp.phone)
         emp.email = request.POST.get("email", emp.email)
         emp.date_hired = request.POST.get("date_hired", emp.date_hired)
-        emp.salary = request.POST.get("salary", emp.salary)
+        emp.salary = float(request.POST.get("salary", emp.salary))
         emp.address = request.POST.get("address", emp.address)
-        emp.status = request.POST.get("status", emp.status)
         emp.department = request.POST.get("department", emp.department)
+        emp.status = "emp_status" in request.POST  # Checkbox for active/inactive
+
+        if emp.user:  # Check if there is an associated User object
+            emp.user.is_active = emp.status
+            emp.user.save()
 
         emp.save()
-        return redirect("/emp/home/")
-    
+        messages.success(request, "Employee updated successfully.")
+        return redirect('/emp/home/')
+    else:
+        return render(request, "emp/update_emp.html", {'emp': emp})
+
+
 # Adding a new task
 @login_required
 def add_task(request):
@@ -177,24 +173,20 @@ def add_task(request):
 @login_required
 def assign_task(request, task_id):
     task = get_object_or_404(Task, pk=task_id)
-    unassigned_employees = Emp.objects.exclude(taskassignee__task=task)  # Exclude already assigned employees
+    # Exclude already assigned and inactive employees
+    unassigned_employees = Emp.objects.exclude(taskassignee__task=task).filter(status=True)
     existing_assignees = TaskAssignee.objects.filter(task=task)
 
     if request.method == 'POST':
         selected_emp_ids = request.POST.getlist('employees')
         weights = request.POST.getlist('weights')
-
-        # Parse the weights to integers and sum them
         new_weights = sum(int(weight) for weight in weights)
-        # Sum the weights of existing assignees
         existing_weights_sum = existing_assignees.aggregate(Sum('weight'))['weight__sum'] or 0
-
-        # Check if total weight including existing assignees exceeds 100
+        
         if new_weights + existing_weights_sum > 100:
             messages.error(request, "The sum of weights including existing assignees cannot exceed 100.")
             return redirect('emp:assign_task', task_id=task_id)
-
-        # Create new assignees
+        
         for emp_id, weight in zip(selected_emp_ids, weights):
             employee = get_object_or_404(Emp, pk=emp_id)
             TaskAssignee.objects.create(task=task, emp=employee, weight=weight)
@@ -326,24 +318,21 @@ def emp_dashboard(request):
     return render(request, 'emp/emp_dashboard.html', context)
 
 
-# @login_required
 def custom_login(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
         
-        if user is not None:
+        if user is not None and user.is_active:  # Check if the user exists and is active
             login(request, user)
             if user.groups.filter(name__in=['HR', 'Manager']).exists():
-                # Redirect HR or Managers to the employee home page
                 return redirect('emp:emp_home')
             else:
-                # Redirect regular employees to their tasks page
                 return redirect('emp:my_tasks')
         else:
-            # Return an 'invalid login' error message.
-            return render(request, 'emp/login.html', {'error': 'Invalid username or password.'})
+            message = 'Invalid username or password, or account is inactive.'
+            return render(request, 'emp/login.html', {'error': message})
     else:
         return render(request, 'emp/login.html')
 
