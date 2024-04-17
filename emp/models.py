@@ -30,8 +30,6 @@ class Emp(models.Model):
 class Task(models.Model):
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
-   
-    assignees = models.ManyToManyField(Emp, related_name='tasks')
     deadline = models.DateTimeField(null=True, blank=True)
     feedback = models.TextField(blank=True, null=True)  
 

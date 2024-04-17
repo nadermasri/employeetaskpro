@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
-from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback
-from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm
+from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback, TaskAssignee
+from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm, TaskForm
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
@@ -14,23 +14,36 @@ from datetime import datetime
 from django.http import HttpResponseRedirect
 from django.db.models import Case, When
 from django.http import JsonResponse
-
+from django.forms import inlineformset_factory
+from django.forms import formset_factory, modelformset_factory
+from django.db.models import Count
 
 @login_required
 def emp_home(request):
-   
-    if request.user.groups.filter(name='Employee').exists():
-        return redirect('emp:my_tasks')
-
+    # Get all employees
     emps = Emp.objects.all()
+
+    # Iterate through each employee to calculate completed tasks count
     for emp in emps:
-        tasks = Task.objects.filter(assignees=emp)
-        completed_tasks = tasks.filter(status="Completed").count()
-        total_tasks = tasks.count()
-        progress = 100 * completed_tasks / total_tasks if total_tasks > 0 else 0
-        emp.progress = progress  # Augment the Emp object with a progress attribute
-    
+        # Get tasks assigned to the employee
+        tasks_assigned_to_employee = Task.objects.filter(taskassignee__emp=emp)
+
+        # Count completed tasks
+        completed_tasks_count = tasks_assigned_to_employee.filter(status='Completed').count()
+
+        # Calculate total tasks count
+        total_tasks_count = tasks_assigned_to_employee.count()
+
+        # Calculate progress percentage
+        progress_percentage = (completed_tasks_count / total_tasks_count) * 100 if total_tasks_count > 0 else 0
+
+        # Assign progress percentage to the employee object
+        emp.progress_percentage = progress_percentage
+
+    # Check if the user is HR or manager
     is_hr_or_manager = request.user.groups.filter(name__in=['HR', 'Manager']).exists()
+
+    # Check if the user is an employee
     is_employee = request.user.groups.filter(name='Employee').exists()
 
     context = {
@@ -147,18 +160,71 @@ def do_update_emp(request, emp_id):
         emp.save()
         return redirect("/emp/home/")
     
+# Adding a new task
 @login_required
-def assign_task(request):
+def add_task(request):
     if request.method == 'POST':
-        form = TaskAssignForm(request.POST)
+        form = TaskForm(request.POST)
         if form.is_valid():
-            task = form.save()
-            # The call to form.save_m2m() is not needed as form.save() already commits the data
-            return redirect('emp:hr_task_overview')  # Adjust the redirect as needed
+            form.save()
+            messages.success(request, "Task added successfully.")
+            return redirect('emp:hr_task_overview')
     else:
-        form = TaskAssignForm()
-    return render(request, 'emp/assign_task.html', {'form': form})
+        form = TaskForm()
+    return render(request, 'emp/add_task.html', {'form': form})
 
+@login_required
+def assign_task(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+    unassigned_employees = Emp.objects.exclude(taskassignee__task=task)  # Exclude already assigned employees
+    existing_assignees = TaskAssignee.objects.filter(task=task)
+
+    if request.method == 'POST':
+        selected_emp_ids = request.POST.getlist('employees')
+        weights = request.POST.getlist('weights')
+
+        total_weight = sum(int(weight) for weight in weights)
+
+        if total_weight > 100:
+            messages.error(request, "The sum of weights cannot exceed 100.")
+            return redirect('emp:assign_task', task_id=task_id)
+
+        # Update existing assignees' weights
+        for assignee in existing_assignees:
+            weight = request.POST.get(f"existing_weight_{assignee.id}")  # Get weight from the form
+            if weight:
+                assignee.weight = weight
+                assignee.save()
+
+        # Create new assignees
+        for emp_id, weight in zip(selected_emp_ids, weights):
+            employee = get_object_or_404(Emp, pk=emp_id)
+            TaskAssignee.objects.create(task=task, emp=employee, weight=weight)
+
+        messages.success(request, "Task assigned successfully.")
+        return redirect('emp:hr_task_overview')
+
+    context = {
+        'task': task,
+        'unassigned_employees': unassigned_employees,
+        'existing_assignees': existing_assignees,
+    }
+    return render(request, 'emp/assign_task.html', context)
+
+@login_required
+def update_weights(request, task_id):
+    task = get_object_or_404(Task, pk=task_id)
+
+    if request.method == 'POST':
+        existing_assignees = TaskAssignee.objects.filter(task=task)
+        for assignee in existing_assignees:
+            weight = request.POST.get(f"existing_weight_{assignee.id}")
+            if weight:
+                assignee.weight = weight
+                assignee.save()
+
+        messages.success(request, "Weights updated successfully.")
+    return redirect('emp:hr_task_overview')
 
 @login_required
 def my_tasks(request):
@@ -169,38 +235,40 @@ def my_tasks(request):
         task_id = request.POST.get('task_id')
         new_status = request.POST.get('status')
         # Ensure the task belongs to the user among assignees
-        task = get_object_or_404(Task, id=task_id, assignees=user_emp)
-        task.status = new_status
-        task.save()
+        task_assignee = get_object_or_404(TaskAssignee, task_id=task_id, emp=user_emp)
+        task_assignee.task.status = new_status
+        task_assignee.task.save()
         return HttpResponseRedirect(request.path_info)  # Use path_info to reload the same page
 
-    tasks = Task.objects.filter(assignees=user_emp)  # Retrieve tasks where the user is one of the assignees
+    # Retrieve task assignees associated with the user
+    task_assignees = TaskAssignee.objects.filter(emp=user_emp).select_related('task')
+
     if sort == 'urgency':
-        tasks = tasks.order_by(Case(
-            When(urgency='High', then=1),
-            When(urgency='Medium', then=2),
-            When(urgency='Low', then=3),
+        task_assignees = task_assignees.order_by(Case(
+            When(task__urgency='High', then=1),
+            When(task__urgency='Medium', then=2),
+            When(task__urgency='Low', then=3),
             default=4
         ))
     else:  # Default sort by deadline
-        tasks = tasks.order_by('deadline')
+        task_assignees = task_assignees.order_by('task__deadline')
 
     status_to_progress = {
         'Not Started': 0,
-        'In Progress': 50, 
+        'In Progress': 50,
         'Completed': 100
     }
 
     tasks_with_progress = [{
-        'task': task,
-        'assignees': task.assignees.all(),  # .all() is used to get all related Emp objects
-        'progress': status_to_progress.get(task.status, 0),  
-        'status': task.status
-    } for task in tasks]
+        'task_assignee': task_assignee,
+        'progress': status_to_progress.get(task_assignee.task.status, 0),
+        'status': task_assignee.task.status
+    } for task_assignee in task_assignees]
 
     context = {
         'tasks_with_progress': tasks_with_progress,
         'user_emp': user_emp,
+        'current_sort': sort,
     }
     return render(request, 'emp/my_tasks.html', context)
 
@@ -210,7 +278,7 @@ def hr_task_overview(request):
     if not request.user.groups.filter(name='HR').exists():
         return redirect('emp:emp_home')  # Adjust the redirect as needed
 
-    tasks = Task.objects.all().prefetch_related('assignees')
+    tasks = Task.objects.all().prefetch_related('taskassignee_set__emp')
     context = {'tasks': tasks}
     return render(request, 'emp/hr_task_overview.html', context)
 
@@ -218,12 +286,15 @@ def hr_task_overview(request):
 @login_required
 def emp_dashboard(request):
     user_emp = request.user.emp if hasattr(request.user, 'emp') else None
-    tasks = Task.objects.filter(assignees=user_emp)  # Adjusted to filter with assignees M2M field
+
+    # Retrieve task assignees associated with the user
+    task_assignees = TaskAssignee.objects.filter(emp=user_emp).select_related('task')
+
     # Calculate task progress
     task_progress = {
-        'Not Started': tasks.filter(status='Not Started').count(),
-        'In Progress': tasks.filter(status='In Progress').count(),
-        'Completed': tasks.filter(status='Completed').count(),
+        'Not Started': task_assignees.filter(task__status='Not Started').count(),
+        'In Progress': task_assignees.filter(task__status='In Progress').count(),
+        'Completed': task_assignees.filter(task__status='Completed').count(),
     }
 
     # Calculate percentages for each status
@@ -231,12 +302,12 @@ def emp_dashboard(request):
     task_progress_percentage = {status: (count / total_tasks * 100 if total_tasks > 0 else 0) for status, count in task_progress.items()}
 
     # Get completed tasks
-    completed_tasks = tasks.filter(status='Completed')
+    completed_task_assignees = task_assignees.filter(task__status='Completed')
 
     context = {
         'employee': user_emp,
         'task_progress': task_progress_percentage.items(),
-        'completed_tasks': completed_tasks,
+        'completed_task_assignees': completed_task_assignees,
     }
 
     return render(request, 'emp/emp_dashboard.html', context)

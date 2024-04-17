@@ -1,23 +1,42 @@
 from django import forms
-from .models import Task, Emp, WhistleblowingCase, CaseConversation
+from .models import Task, Emp, WhistleblowingCase, CaseConversation, TaskAssignee
 from django_select2 import forms as s2forms
+from django.forms import DateTimeInput
 
-
-
-
-class TaskAssignForm(forms.ModelForm):
+class TaskForm(forms.ModelForm):
     class Meta:
         model = Task
-        fields = ['title', 'description', 'assignees', 'deadline', 'urgency']
+        fields = ['title', 'description', 'deadline', 'urgency']
         widgets = {
-            'deadline': forms.DateTimeInput(attrs={'type': 'datetime-local'}),
-            'description': forms.Textarea(attrs={'rows': 3}),
-            'assignees': s2forms.Select2MultipleWidget,
+            'deadline': DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}, format='%Y-%m-%dT%H:%M'),
         }
 
     def __init__(self, *args, **kwargs):
+        super(TaskForm, self).__init__(*args, **kwargs)
+        initial_deadline = self.initial.get('deadline')
+        if initial_deadline:
+            # Format the date to match the datetime-local input requirements
+            self.initial['deadline'] = initial_deadline.strftime('%Y-%m-%dT%H:%M')
+
+class TaskAssignForm(forms.ModelForm):
+    emp = forms.ModelChoiceField(
+        queryset=Emp.objects.all(),
+        label="Employee",
+        required=True
+    )
+    weight = forms.IntegerField(min_value=1, max_value=100, help_text="Percentage of responsibility")
+
+    class Meta:
+        model = TaskAssignee
+        fields = ['emp', 'weight']
+
+    def __init__(self, *args, **kwargs):
         super(TaskAssignForm, self).__init__(*args, **kwargs)
-        self.fields['assignees'].queryset = Emp.objects.all()  # Or any other queryset you wish to use
+        # Assuming you might want to filter employees or make adjustments based on the instance
+        if 'instance' in kwargs:
+            self.fields['emp'].queryset = Emp.objects.exclude(id=kwargs['instance'].emp.id)
+
+
 class TaskUpdateForm(forms.ModelForm):
     class Meta:
         model = Task

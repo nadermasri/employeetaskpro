@@ -1,45 +1,59 @@
+<!-- Updated HTML Template -->
 {% load static %}
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Employee Management System</title>
+    <title>Employee Management System - Assign Task</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/select2/dist/css/select2.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/assigntask.css' %}">
-    <!-- Ensure that you include the select2 CSS -->
 </head>
 <body>
     {% include 'emp/navbar.html' %}
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Assign Task</h1>
+        <h1 class="text-center mb-1">Assign Task</h1>
+        <p class="text-muted text-center">Task Title: <strong>{{ task.title }}</strong><br>Task Description: <strong>{{ task.description }}</strong></p>
         <div class="assignment-form shadow p-4 rounded">
+            <!-- Updated HTML Template -->
             <form method="post" id="assignTaskForm">
                 {% csrf_token %}
-                {{ form.title.label_tag }} {{ form.title }}
-                {{ form.description.label_tag }} {{ form.description }}
-                {{ form.assignees.label_tag }} {{ form.assignees }}
-                {{ form.deadline.label_tag }} {{ form.deadline }}
-                {{ form.urgency.label_tag }} {{ form.urgency }}
-                <div class="d-flex justify-content-between">
-                    <a href="/emp/home/" class="btn btn-outline-secondary">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Assign Task</button>
+                <div class="mb-3">
+                    <label for="employees" class="form-label">Select Employee</label>
+                    <select name="employees" id="employees" class="form-select" multiple>
+                        {% for emp in unassigned_employees %}
+                            <option value="{{ emp.id }}">{{ emp.firstname }} {{ emp.lastname }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
+                <div class="mb-3">
+                    <label for="weights" class="form-label">Weight</label>
+                    <input type="number" name="weights" id="weights" class="form-control" placeholder="Enter weight">
+                </div>
+                <button type="submit" class="btn btn-primary">Assign Task</button>
             </form>
+
+            {% if existing_assignees %}
+                <div class="mb-3">
+                    <h5>Existing Assignees:</h5>
+                    <form method="post" action="{% url 'emp:update_weights' task.id %}">
+                        {% csrf_token %}
+                        {% for assignee in existing_assignees %}
+                            <div class="input-group mb-3">
+                                <span class="input-group-text">{{ assignee.emp.firstname }} {{ assignee.emp.lastname }}</span>
+                                <input type="number" name="existing_weight_{{ assignee.id }}" class="form-control" placeholder="Enter weight" value="{{ assignee.weight }}">
+                            </div>
+                        {% endfor %}
+                        <button type="submit" class="btn btn-primary">Update Weights</button>
+                    </form>
+                </div>
+            {% endif %}
+             <!-- Back Button -->
+             <div class="text-center">
+                <a href="{% url 'emp:hr_task_overview' %}" class="btn btn-secondary">Back to HR Task Overview</a>
+            </div>
         </div>
     </div>
-    {{ form.media }} <!-- Ensure that you include the select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2/dist/js/select2.full.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            $('#id_assignees').select2({
-                placeholder: "Select assignees",
-                allowClear: true
-            });
-        });
-    </script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

@@ -31,8 +31,8 @@
                 <td>{{ task.title }}</td>
                 <td>{{ task.description }}</td>
                 <td>
-                    {% for assignee in task.assignees.all %}
-                        {{ assignee.firstname }} {{ assignee.lastname }}{% if not forloop.last %}, {% endif %}
+                    {% for assignee in task.taskassignee_set.all %}
+                        <li>{{ assignee.emp.firstname }} {{ assignee.emp.lastname }} - Weight: {{ assignee.weight }}</li>
                     {% endfor %}
                 </td>
                 <td>{{ task.deadline|date:"D, d M Y" }}</td>
@@ -59,6 +59,8 @@
                         {% csrf_token %}
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
+                    <!-- Assign employees button -->
+                    <a href="{% url 'emp:assign_task' task.id %}" class="btn btn-info btn-sm mt-2">Assign Employees</a>
                 </td>
             </tr>
             {% empty %}

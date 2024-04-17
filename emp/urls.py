@@ -11,7 +11,6 @@ urlpatterns = [
     path("delete-emp/<int:emp_id>", delete_emp, name='delete_emp'),
     path("update-emp/<int:emp_id>", update_emp, name='update_emp'),
     path("do-update-emp/<int:emp_id>", do_update_emp, name='do_update_emp'),
-    path("assign-task/", assign_task, name='assign_task'),
     path("my-tasks/", my_tasks, name='my_tasks'),
     path('hr-tasks/', hr_task_overview, name='hr_task_overview'),
     path('emp-dashboard/', emp_dashboard, name='emp_dashboard'),
@@ -24,6 +23,9 @@ urlpatterns = [
     path('delete-task/<int:task_id>/', delete_task, name='delete_task'),
     path('calendar/', calendar_view, name='calendar-view'), 
     path('api/events/', event_data, name='api-events'), 
+    path('add-task/', add_task, name='add_task'),  # URL for adding a new task
+    path('assign-task/<int:task_id>/', assign_task, name='assign_task'),  # URL for assigning a task
+    path('update_weights/<int:task_id>/', update_weights, name='update_weights'),  # Add this line
 
 
 
