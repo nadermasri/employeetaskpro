@@ -510,6 +510,13 @@ def event_data(request):
 
 
 @login_required
+def get_task_employees(request, task_id):
+    if request.method == 'GET':
+        employees = Emp.objects.filter(taskassignee__task_id=task_id).values('id', 'firstname', 'lastname')
+        return JsonResponse(list(employees), safe=False)
+    return JsonResponse({'error': 'Request must be GET'}, status=400)
+
+@login_required
 def add_sprint(request):
     if request.method == 'POST':
         form = SprintForm(request.POST)

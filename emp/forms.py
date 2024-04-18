@@ -12,6 +12,7 @@ class SprintForm(forms.ModelForm):
             'start_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'end_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'description': forms.Textarea(attrs={'rows': 3}),
+            'employees': forms.SelectMultiple(attrs={'class': 'form-control'}),
         }
 class TaskForm(forms.ModelForm):
     class Meta:
