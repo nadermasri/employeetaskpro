@@ -4,6 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
 
@@ -45,6 +46,8 @@ class Task(models.Model):
         choices=[('Not Started', 'Not Started'), ('In Progress', 'In Progress'), ('Completed', 'Completed')], 
         default='Not Started'
     )
+    progress_percentage = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)],
+                                              help_text='Progress percentage for tasks that are "In Progress"')
     date_created = models.DateTimeField(default=timezone.now)
     date_updated = models.DateTimeField(auto_now=True)
     
@@ -55,7 +58,12 @@ class TaskAssignee(models.Model):
     task = models.ForeignKey('Task', on_delete=models.CASCADE)
     emp = models.ForeignKey('Emp', on_delete=models.CASCADE)
     weight = models.IntegerField(help_text='Percentage of task responsibility')
-
+    status = models.CharField(
+        max_length=50,
+        choices=[('Not Started', 'Not Started'), ('In Progress', 'In Progress'), ('Completed', 'Completed')],
+        default='Not Started'
+    )
+    progress = models.IntegerField(default=0, help_text='Specific progress for tasks that are "In Progress"', validators=[MinValueValidator(0), MaxValueValidator(100)])
     class Meta:
         unique_together = ('task', 'emp')
 

@@ -50,11 +50,13 @@
                         <form method="post" action="{% url 'emp:my_tasks' %}">
                             {% csrf_token %}
                             <input type="hidden" name="task_id" value="{{ tp.task_assignee.task.id }}">
-                            <select name="status" onchange="this.form.submit()">
+                            <select name="status" class="status-dropdown" onchange="checkStatus(this)">
                                 <option value="Not Started" {% if tp.task_assignee.task.status == "Not Started" %}selected{% endif %}>Not Started</option>
                                 <option value="In Progress" {% if tp.task_assignee.task.status == "In Progress" %}selected{% endif %}>In Progress</option>
                                 <option value="Completed" {% if tp.task_assignee.task.status == "Completed" %}selected{% endif %}>Completed</option>
                             </select>
+                            <input type="number" name="progress" class="progress-input" style="display: none;" min="0" max="100" placeholder="Enter progress %" value="{{ tp.task_assignee.progress }}">
+                            <button type="submit" class="submit-btn" style="display: none;">Submit</button>
                         </form>
                     </td>
                     <td>{{ tp.progress }}%</td>
@@ -86,6 +88,51 @@
             </tbody>
         </table>
     </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.status-dropdown').forEach(function(selectElement) {
+        checkStatus(selectElement); // Call this to ensure correct display on page load
+        selectElement.addEventListener('change', function() {
+            checkStatus(this); // Call this on change
+        });
+    });
+
+    document.querySelectorAll('.submit-btn').forEach(function(button) {
+        button.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            var form = button.closest('form');
+            var formData = new FormData(form);
+            var progressTd = button.closest('td');
+            
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
+            }).then(response => response.text())
+              .then(data => {
+                  progressTd.querySelector('.progress-display').textContent = formData.get('progress') + '%';
+              });
+        });
+    });
+});
+
+function checkStatus(selectElement) {
+    var progressInput = selectElement.parentNode.querySelector('.progress-input');
+    var submitBtn = selectElement.parentNode.querySelector('.submit-btn');
+    // Check if the selected value is 'In Progress'
+    if (selectElement.value === 'In Progress') {
+        progressInput.style.display = 'block'; // Show the progress input
+        submitBtn.style.display = 'block';     // Show the submit button
+    } else {
+        progressInput.style.display = 'none';  // Hide the progress input
+        submitBtn.style.display = 'none';      // Hide the submit button
+        // If the status is not 'In Progress', we reset the progress to 0 or 100 based on the status
+        progressInput.value = selectElement.value === 'Completed' ? 100 : 0;
+    }
+}
+</script>
+            
+        
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

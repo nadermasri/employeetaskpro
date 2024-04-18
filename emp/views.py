@@ -244,10 +244,21 @@ def my_tasks(request):
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         new_status = request.POST.get('status')
-        # Ensure the task belongs to the user among assignees
+        progress_input = request.POST.get('progress', 0)  # Default to 0 if not provided
         task_assignee = get_object_or_404(TaskAssignee, task_id=task_id, emp=user_emp)
         task_assignee.task.status = new_status
-        task_assignee.task.save()
+       # Update progress based on the status
+        if new_status == 'In Progress':
+            try:
+                task_assignee.progress = int(progress_input)  # Convert to integer and save
+            except ValueError:
+                task_assignee.progress = 0  # In case of invalid input, default to 0
+        elif new_status == 'Completed':
+            task_assignee.progress = 100
+        else:
+            task_assignee.progress = 0
+
+        task_assignee.save()
         return HttpResponseRedirect(request.path_info)  # Use path_info to reload the same page
 
     # Retrieve task assignees associated with the user
@@ -263,15 +274,10 @@ def my_tasks(request):
     else:  # Default sort by deadline
         task_assignees = task_assignees.order_by('task__deadline')
 
-    status_to_progress = {
-        'Not Started': 0,
-        'In Progress': 50,
-        'Completed': 100
-    }
 
     tasks_with_progress = [{
         'task_assignee': task_assignee,
-        'progress': status_to_progress.get(task_assignee.task.status, 0),
+        'progress': task_assignee.progress,
         'status': task_assignee.task.status
     } for task_assignee in task_assignees]
 
@@ -290,7 +296,23 @@ def hr_task_overview(request):
         return redirect('emp:emp_home')  # Adjust the redirect as needed
 
     tasks = Task.objects.all().prefetch_related('taskassignee_set__emp')
-    context = {'tasks': tasks}
+    tasks_with_progress = []
+    for task in tasks:
+        if task.status == 'In Progress':
+            total_weight = sum(assignee.weight for assignee in task.taskassignee_set.all())
+            if total_weight > 0:
+                weighted_progress = sum(
+                    assignee.weight * assignee.progress for assignee in task.taskassignee_set.all()
+                )
+                progress_percentage = weighted_progress / total_weight
+            else:
+                progress_percentage = 0
+            task.progress_display = f"{progress_percentage}%"
+        else:
+            task.progress_display = task.status  # Not in progress, show status directly
+        tasks_with_progress.append(task)
+
+    context = {'tasks': tasks_with_progress}
     return render(request, 'emp/hr_task_overview.html', context)
 
 
@@ -615,3 +637,7 @@ def add_meeting(request):
         form = MeetingForm()
 
     return render(request, "emp/add_meeting.html", {'form': form})
+
+@login_required
+def view_more(request):
+    return render(request,'emp/task_view_more.html')
