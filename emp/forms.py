@@ -1,8 +1,25 @@
 from django import forms
-from .models import Task, Emp, WhistleblowingCase, CaseConversation, TaskAssignee,Sprint, Message
+from .models import Task, Emp, WhistleblowingCase, CaseConversation, TaskAssignee,Sprint, Message,Meeting
 from django_select2 import forms as s2forms
-from django.forms import DateTimeInput
+from django.forms import DateTimeInput,ModelMultipleChoiceField
 from django.contrib.auth.models import User
+
+
+class MeetingForm(forms.ModelForm):
+    participants = ModelMultipleChoiceField(
+        queryset=Emp.objects.filter(status=True),  # Assuming 'status=True' means the employee is active
+        widget=forms.CheckboxSelectMultiple,
+        required=True
+    )
+
+    class Meta:
+        model = Meeting
+        fields = ['title', 'description', 'start_time', 'end_time', 'participants']
+        widgets = {
+            'start_time': DateTimeInput(attrs={'type': 'datetime-local'}),
+            'end_time': DateTimeInput(attrs={'type': 'datetime-local'}),
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
 
 class SprintForm(forms.ModelForm):
     class Meta:

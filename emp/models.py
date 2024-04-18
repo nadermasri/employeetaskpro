@@ -120,3 +120,13 @@ class Message(models.Model):
     
     def __str__(self):
         return f"From {self.sender} to {self.recipient} at {self.timestamp}"
+    
+class Meeting(models.Model):
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True, null=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    participants = models.ManyToManyField(Emp)  # Assuming Emp is your Employee model
+
+    def __str__(self):
+        return self.title

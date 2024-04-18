@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from django.http import HttpResponse
-from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback, TaskAssignee,Sprint, Message
-from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm, TaskForm,SprintForm, MessageForm
+from .models import Emp, Task, WhistleblowingCase, CaseConversation, Feedback, TaskAssignee,Sprint, Message, Meeting
+from .forms import TaskAssignForm, WhistleblowingForm, ConversationForm, TaskForm,SprintForm, MessageForm, MeetingForm
 from django.utils import timezone
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login
@@ -21,6 +21,7 @@ from django.db.models import Sum
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
+from django.db.models import Q
 
 
 
@@ -482,7 +483,7 @@ def event_data(request):
     # Check if the user is HR or Manager
     user_groups = request.user.groups.values_list('name', flat=True)
     is_hr_or_manager = any(group in user_groups for group in ['HR', 'Manager'])
-
+    meetings = Meeting.objects.all()
     # Get sprints for HR/Manager or specific employee
     if is_hr_or_manager:
         sprints = Sprint.objects.all()
@@ -499,6 +500,16 @@ def event_data(request):
          'end': sprint.end_date.strftime('%Y-%m-%dT%H:%M:%S'), 'allDay': True}
         for sprint in sprints
     ]
+
+    # If no events found, send a 404 response
+    events.extend([
+        {
+            'title': meeting.title,
+            'start': meeting.start_time.strftime('%Y-%m-%dT%H:%M:%S'),
+            'end': meeting.end_time.strftime('%Y-%m-%dT%H:%M:%S'),
+            'allDay': False  # or True, based on your model definition
+        } for meeting in meetings
+    ])
 
     # If no events found, send a 404 response
     if not events:
@@ -575,3 +586,32 @@ def send_message(request):
         # Return a response, e.g., the message ID and a success status
         return JsonResponse({'id': message.id, 'status': 'success'})
     return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
+
+@login_required
+def add_meeting(request):
+    if request.method == 'POST':
+        form = MeetingForm(request.POST)
+        if form.is_valid():
+            meeting = form.save(commit=False)
+
+            # Check for overlapping meetings
+            participants = form.cleaned_data.get('participants')
+            overlapping_meetings = Meeting.objects.filter(
+                Q(participants__in=participants) & 
+                (Q(start_time__lt=meeting.end_time) & Q(end_time__gt=meeting.start_time))
+            ).distinct()
+            
+            if overlapping_meetings.exists():
+                # Handle the overlap situation, e.g., by returning an error message
+                messages.error(request, "One or more participants are not available in the given time slot.")
+                return render(request, 'emp/add_meeting.html', {'form': form})
+
+            # No overlaps, safe to save
+            meeting.save()
+            form.save_m2m()
+            messages.success(request, "Meeting scheduled successfully.")
+            return redirect('emp:calendar')
+    else:
+        form = MeetingForm()
+
+    return render(request, "emp/add_meeting.html", {'form': form})

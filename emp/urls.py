@@ -31,8 +31,8 @@ urlpatterns = [
     path('assign-task/<int:task_id>/', assign_task, name='assign_task'),  # URL for assigning a task
     path('update_weights/<int:task_id>/', update_weights, name='update_weights'),
     path('add-sprint/', add_sprint, name='add_sprint'), # Add this line
-    path('get-task-employees/<int:task_id>/', get_task_employees, name='get-task-employees')
-
+    path('get-task-employees/<int:task_id>/', get_task_employees, name='get-task-employees'),
+    path('add-meeting/', add_meeting, name='add_meeting')
 
 
 

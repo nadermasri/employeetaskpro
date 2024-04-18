@@ -21,6 +21,7 @@ from .views import custom_login
 from django.contrib.auth import views as auth_views
 # from django.contrib.auth.views import LogoutView
 from emp.views import add_sprint
+from emp.views import add_meeting
 # from emp import views
 
 
@@ -34,5 +35,5 @@ urlpatterns = [
     path("",fun.emp_home),
     path("index/",fun.emp_home),
     path('add-sprint/', add_sprint, name='add_sprint'),
-
+    path('add-meeting/', add_meeting, name='add_meeting')
 ]
