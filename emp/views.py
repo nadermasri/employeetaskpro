@@ -27,9 +27,14 @@ from django.db.models import Q
 
 @login_required
 def emp_home(request):
-    # Get all employees
-    emps = Emp.objects.all()
+    is_hr_or_manager = request.user.groups.filter(name__in=['HR', 'Manager']).exists()
 
+    if not is_hr_or_manager:
+        messages.error(request, "You do not have permission to access this page.")
+        return redirect('emp:emp_dashboard')
+
+    # If the user is HR or Manager, show the employee tables
+    emps = Emp.objects.all()
     # Iterate through each employee to calculate completed tasks count
     for emp in emps:
         tasks_assigned_to_employee = Task.objects.filter(taskassignee__emp=emp)
@@ -38,14 +43,9 @@ def emp_home(request):
         progress_percentage = (completed_tasks_count / total_tasks_count) * 100 if total_tasks_count > 0 else 0
         emp.progress_percentage = progress_percentage
 
-    is_hr_or_manager = request.user.groups.filter(name__in=['HR', 'Manager']).exists()
-
-    is_employee = request.user.groups.filter(name='Employee').exists()
-
     context = {
         'emps': emps,
         'is_hr_or_manager': is_hr_or_manager,
-        'is_employee': is_employee,
     }
 
     return render(request, "emp/home.html", context)
@@ -246,18 +246,17 @@ def my_tasks(request):
         new_status = request.POST.get('status')
         progress_input = request.POST.get('progress', 0)  # Default to 0 if not provided
         task_assignee = get_object_or_404(TaskAssignee, task_id=task_id, emp=user_emp)
-        task_assignee.task.status = new_status
-       # Update progress based on the status
-        if new_status == 'In Progress':
-            try:
-                task_assignee.progress = int(progress_input)  # Convert to integer and save
-            except ValueError:
-                task_assignee.progress = 0  # In case of invalid input, default to 0
-        elif new_status == 'Completed':
-            task_assignee.progress = 100
-        else:
+        
+        if new_status == 'Completed':
+            task_assignee.progress = 100  # Automatically set progress to 100% if completed
+            task_assignee.task.status = 'Completed'
+        elif new_status == 'In Progress' and int(progress_input) > 0:
+            task_assignee.progress = int(progress_input)
+            task_assignee.task.status = 'In Progress'
+        elif new_status == 'Not Started':
             task_assignee.progress = 0
-
+            task_assignee.task.status = 'Not Started'
+        
         task_assignee.save()
         return HttpResponseRedirect(request.path_info)  # Use path_info to reload the same page
 
@@ -274,7 +273,6 @@ def my_tasks(request):
     else:  # Default sort by deadline
         task_assignees = task_assignees.order_by('task__deadline')
 
-
     tasks_with_progress = [{
         'task_assignee': task_assignee,
         'progress': task_assignee.progress,
@@ -288,6 +286,7 @@ def my_tasks(request):
     }
 
     return render(request, 'emp/my_tasks.html', context)
+
 
 
 @login_required
@@ -372,13 +371,17 @@ def update_task_status(request, task_id):
     if request.method == 'POST':
         form = TaskUpdateForm(request.POST, instance=task)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Task status and feedback updated successfully.')
+            updated_task = form.save(commit=False)  # Get the instance without saving
+            # Optionally, add any additional processing here
+            updated_task.save()  # Save changes to the database
+            messages.success(request, 'Task status updated successfully.')
+            return redirect('your_success_view')
         else:
-            messages.error(request, 'Error updating task status and feedback.')
+            messages.error(request, 'Form submission error.')
     else:
-        form = TaskUpdateForm(instance=task)  # Add this line to handle GET request
+        form = TaskUpdateForm(instance=task)
     return render(request, 'emp/update_task_status.html', {'form': form, 'task': task})
+
 
 
 @login_required
