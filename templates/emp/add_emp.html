@@ -4,7 +4,26 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Add Employee Details</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .invalid-feedback {
+  display: none;
+  color: red;
+    }
+
+    input:invalid {
+      border-color: red;
+    }
+
+    textarea:invalid {
+      border-color: red;
+    }
+
+    select:invalid {
+      border-color: red;
+    }
+
+  </style>
 </head>
 <body>
   {% include 'emp/navbar.html' %}
@@ -15,137 +34,119 @@
       <div class="col-md-6 offset-md-3">
         <div class="card bg-light text-black">
           <div class="card-body">
-            <form action="/emp/add-emp/" method="POST">
+            <form action="/emp/add-emp/" method="POST" novalidate>
               {% csrf_token %}
+
+              <!-- dynamically iterate over input fields to simplify validation setup -->
+              {% for field in form %}
+              <div class="mb-3">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                <div class="invalid-feedback">Please enter a valid {{ field.label|lower }}.</div>
+              </div>
+              {% endfor %}
 
               <!--First Name-->
               <div class="mb-3">
                 <label for="firstname">First Name</label>
-                <input type="text" id="firstname" class="form-control {% if form.firstname.errors %}is-invalid{% endif %}" placeholder="Enter First Name" name="firstname" value="{{ form_data.firstname|default:'' }}" required/>
-                {% for error in form.firstname.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="text" id="firstname" class="form-control" placeholder="Enter First Name" name="firstname" value="{{ form_data.firstname|default:'' }}" required pattern="[A-Za-z]+" title="First name should only contain letters.">
+                <div class="invalid-feedback">Please enter a valid first name.</div>
               </div>
 
               <!--Father's Name-->
               <div class="mb-3">
                 <label for="fathername">Father's Name</label>
-                <input type="text" id="fathername" class="form-control {% if form.fathername.errors %}is-invalid{% endif %}" placeholder="Enter Father's Name" name="fathername" value="{{ form_data.fathername|default:'' }}" required />
-                {% for error in form.fathername.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="text" id="fathername" class="form-control" placeholder="Enter Father's Name" name="fathername" value="{{ form_data.fathername|default:'' }}" required pattern="[A-Za-z]+" title="Father's name should only contain letters.">
+                <div class="invalid-feedback">Please enter a valid father's name.</div>
               </div>
 
               <!--Last Name-->
               <div class="mb-3">
                 <label for="lastname">Last Name</label>
-                <input type="text" id="lastname" class="form-control {% if form.lastname.errors %}is-invalid{% endif %}" placeholder="Enter Last Name" name="lastname" value="{{ form_data.lastname|default:'' }}" required />
-                {% for error in form.lastname.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="text" id="lastname" class="form-control" placeholder="Enter Last Name" name="lastname" value="{{ form_data.lastname|default:'' }}" required pattern="[A-Za-z]+" title="Last name should only contain letters.">
+                <div class="invalid-feedback">Please enter a valid last name.</div>
               </div>
 
-             <!--Gender-->
-            <div class="mb-3">
-              <label>Gender</label>
-              <div>
-                <input type="radio" id="male" name="gender" value="Male" {% if form_data.gender == "Male" %}checked{% endif %}>
-                <label for="male">Male</label>
-                <input type="radio" id="female" name="gender" value="Female" {% if form_data.gender == "Female" %}checked{% endif %}>
-                <label for="female">Female</label>
-                <input type="radio" id="other" name="gender" value="Other" {% if form_data.gender == "Other" %}checked{% endif %}>
-                <label for="other">Other</label>
+              <!--Gender-->
+              <div class="mb-3">
+                <label>Gender</label>
+                <div>
+                  <input type="radio" id="male" name="gender" value="Male" required>
+                  <label for="male">Male</label>
+                  <input type="radio" id="female" name="gender" value="Female">
+                  <label for="female">Female</label>
+                  <input type="radio" id="other" name="gender" value="Other">
+                  <label for="other">Other</label>
+                </div>
               </div>
-            </div>
-
 
               <!--DOB-->
               <div class="mb-3">
                 <label for="dob">Date of Birth</label>
-                <input type="date" id="dob" class="form-control {% if form.dob.errors %}is-invalid{% endif %}" name="dob" value="{{ form_data.dob|default:'' }}" required />
-                {% for error in form.dob.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="date" id="dob" class="form-control" name="dob" value="{{ form_data.dob|default:'' }}" required>
+                <div class="invalid-feedback">Please enter a valid date of birth.</div>
               </div>
 
               <!--Employee Email-->
               <div class="mb-3">
                 <label for="email">Email</label>
-                <input type="email" id="email" class="form-control {% if form.email.errors %}is-invalid{% endif %}" placeholder="Enter Email" name="email" value="{{ form_data.email|default:'' }}" required/>
-                {% for error in form.email.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="email" id="email" class="form-control" placeholder="Enter Email" name="email" value="{{ form_data.email|default:'' }}" required>
+                <div class="invalid-feedback">Please enter a valid email.</div>
               </div>
 
               <!--Date Hired-->
               <div class="mb-3">
                 <label for="date_hired">Date Hired</label>
-                <input type="date" id="date_hired" class="form-control {% if form.date_hired.errors %}is-invalid{% endif %}" name="date_hired" value="{{ form_data.date_hired|default:'' }}" required />
-                {% for error in form.date_hired.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="date" id="date_hired" class="form-control" name="date_hired" value="{{ form_data.date_hired|default:'' }}" required>
+                <div class="invalid-feedback">Please enter a valid hiring date.</div>
               </div>
 
               <!--Salary-->
               <div class="mb-3">
                 <label for="salary">Salary</label>
-                <input type="text" id="salary" class="form-control {% if form.salary.errors %}is-invalid{% endif %}" placeholder="Enter Salary" name="salary" value="{{ form_data.salary|default:'' }}" required />
-                {% for error in form.salary.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="number" id="salary" class="form-control" placeholder="Enter Salary" name="salary" value="{{ form_data.salary|default:'' }}" required min="0">
+                <div class="invalid-feedback">Please enter a valid salary.</div>
               </div>
 
               <!--Employee ID-->
               <div class="mb-3">
                 <label for="emp_id">Employee ID</label>
-                <input type="text" id="emp_id" class="form-control {% if form.emp_id.errors %}is-invalid{% endif %}" placeholder="Enter Employee ID" name="emp_id" value="{{ form_data.emp_id|default:'' }}" required/>
-                {% for error in form.emp_id.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="text" id="emp_id" class="form-control" placeholder="Enter Employee ID" name="emp_id" value="{{ form_data.emp_id|default:'' }}" required>
+                <div class="invalid-feedback">Please enter a valid employee ID.</div>
               </div>
 
               <!--Phone Number-->
               <div class="mb-3">
                 <label for="phone">Phone</label>
-                <input type="text" id="phone" class="form-control" placeholder="Enter Employee Phone" name="phone" value="{{ form_data.phone|default:'' }}" required>
-                {% for error in form.phone.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <input type="tel" id="phone" class="form-control" placeholder="Enter Employee Phone" name="phone" value="{{ form_data.phone|default:'' }}" required pattern="\\d{10}" title="Phone number should be 10 digits.">
+                <div class="invalid-feedback">Please enter a valid phone number.</div>
               </div>
 
               <!--Employee Address-->
               <div class="mb-3">
                 <label for="address">Address</label>
-                <textarea id="address" rows="4" class="form-control {% if form.address.errors %}is-invalid{% endif %}" placeholder="Enter Address" name="address" required>{{ form_data.address|default:'' }}</textarea>
-                {% for error in form.address.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <textarea id="address" rows="4" class="form-control" placeholder="Enter Address" name="address" required>{{ form_data.address|default:'' }}</textarea>
+                <div class="invalid-feedback">Please enter a valid address.</div>
               </div>
 
               <!--Status-->
               <div class="mb-3 form-check">
-                <input type="checkbox" id="status" class="form-check-input {% if form.status.errors %}is-invalid{% endif %}" name="status" {% if form_data.status %}checked{% endif %}>
+                <input type="checkbox" id="status" class="form-check-input" name="status">
                 <label for="status">Active</label>
-                {% for error in form.status.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
               </div>
-
 
               <!--Departments-->
               <div class="mb-3">
                 <label for="department">Department</label>
-                <select id="department" class="form-control {% if form.department.errors %}is-invalid{% endif %}" name="department">
-                  <option value="Marketing" {% if form_data.department == "Marketing" %}selected{% endif %}>Marketing</option>
-                  <option value="HR" {% if form_data.department == "Human Resources" %}selected{% endif %}>Human Resources</option>
-                  <option value="DEV" {% if form_data.department == "Development" %}selected{% endif %}>Development</option>
-                  <option value="FIN" {% if form_data.department == "Finance" %}selected{% endif %}>Finance</option>
+                <select id="department" class="form-control" name="department" required>
+                  <option value="">Select a Department</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="HR">Human Resources</option>
+                  <option value="DEV">Development</option>
+                  <option value="FIN">Finance</option>
                 </select>
-                {% for error in form.department.errors %}
-                  <div class="invalid-feedback">{{ error }}</div>
-                {% endfor %}
+                <div class="invalid-feedback">Please select a department.</div>
               </div>
-
 
               <!--Add Employee Button-->
               <div class="container text-center">
@@ -159,7 +160,56 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const form = document.querySelector('form');
+      form.addEventListener('submit', function(event) {
+        event.preventDefault(); // Stop form from submitting immediately
+        let isFormValid = true;
+    
+        // Iterate over all elements within the form
+        [...this.elements].forEach(element => {
+          // Find the closest parent div and then the invalid-feedback within that div
+          const feedbackElement = element.closest('div').querySelector('.invalid-feedback');
+          
+          // Debugging: Log the element and its feedback element
+          console.log(element, feedbackElement);
+    
+          // Reset feedback visibility
+          if (feedbackElement) {
+            feedbackElement.style.display = 'none';
+          }
+    
+          // Check validity and show feedback if invalid
+          if (!element.validity.valid) {
+            isFormValid = false;
+            if (feedbackElement) {
+              feedbackElement.style.display = 'block';
+            } else {
+              // If no specific feedback element found, show a generic message
+              alert(`Please enter a valid ${element.name}.`);
+            }
+          }
+        });
+    
+        // If form is valid, submit it
+        if (isFormValid) {
+          this.submit();
+        }
+      });
+    
+      // Add event listener to each form element to hide feedback on input change
+      [...form.elements].forEach(element => {
+        element.addEventListener('input', function() {
+          const feedbackElement = this.closest('div').querySelector('.invalid-feedback');
+          if (this.validity.valid && feedbackElement) {
+            feedbackElement.style.display = 'none';
+          }
+        });
+      });
+    });
+    </script>
+    
+    
 </body>
 </html>
