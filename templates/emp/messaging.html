@@ -19,7 +19,7 @@
                         <div class="input-group">
                             <input type="text" placeholder="Search..." class="form-control search">
                             <div class="input-group-prepend">
-                                <span class="input-group-text search_btn"><i class="fas fa-search"></i></span>
+                                
                             </div>
                         </div>
                     </div>
@@ -56,8 +56,12 @@
                         <div class="input-group">
                             <textarea name="" class="form-control type_msg" placeholder="Type your message..."></textarea>
                             <div class="input-group-append">
-                                <span class="input-group-text send_btn"><i class="fas fa-location-arrow"></i></span>
-                            </div>
+                                <span class="input-group-text send_btn">
+                                    <div class="send-icon-container">
+                                        <img src="{% static 'images/send_icon.png' %}" alt="Send Icon" class="send-icon">
+                                    </div>
+                                </span>
+                            </div>                            
                         </div>
                     </div>
                 </div>
@@ -132,6 +136,23 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => console.error('Error sending message:', error));
     }
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.querySelector('.search');
+    searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.trim().toLowerCase();
+        const contacts = document.querySelectorAll('.contact');
+
+        contacts.forEach(contact => {
+            const username = contact.querySelector('.user_info span').textContent.toLowerCase();
+            if (username.includes(searchTerm)) {
+                contact.style.display = 'block'; // Show the contact if it matches the search term
+            } else {
+                contact.style.display = 'none'; // Hide the contact if it doesn't match
+            }
+        });
+    });
+});
 
     </script>
     

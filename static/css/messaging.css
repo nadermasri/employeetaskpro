@@ -108,3 +108,22 @@ body {
     cursor: pointer;
     border-radius: 0 15px 15px 0;
 }
+
+.send-icon-container {
+    width: auto; /* Set to auto to adjust based on the size of the icon */
+    height: auto; /* Set to auto to adjust based on the size of the icon */
+}
+
+.send-icon {
+    max-width: 20px; /* Set the maximum width of the icon */
+    max-height: 20px; /* Set the maximum height of the icon */
+}
+.search-icon-container {
+    width: auto; /* Set to auto to adjust based on the size of the icon */
+    height: auto; /* Set to auto to adjust based on the size of the icon */
+}
+
+.search-icon {
+    max-width: 20px; /* Set the maximum width of the icon */
+    max-height: 20px; /* Set the maximum height of the icon */
+}
