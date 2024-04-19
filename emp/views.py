@@ -102,36 +102,50 @@ def add_emp(request):
             email=form_data['email'],
         )
 
-        # Fetch the 'Employee' group
-        employee_group = Group.objects.get(name='Employee')
-
-        # Add the user to the 'Employee' group
-        employee_group.user_set.add(user)
-
+        # Role assignment based on checkboxes
+        if 'isHR' in request.POST:
+            hr_group = Group.objects.get(name='HR')
+            user.groups.add(hr_group)
+        if 'isManager' in request.POST:
+            manager_group = Group.objects.get(name='Manager')
+            user.groups.add(manager_group)
 
         e = Emp(**form_data, user=user, date_added=timezone.now())
         e.save()
 
-
-       # After saving the employee record
         messages.success(request, "Employee added successfully.")
-        return render(request, 'emp/employee_success.html', {'username': user.username, 'password':plaintext_password})
+        return render(request, 'emp/employee_success.html', {'username': user.username, 'password': plaintext_password})
     else:
         return render(request, "emp/add_emp.html", {})
-
-@login_required
-def delete_emp(request,emp_id):
-    emp=Emp.objects.get(pk=emp_id)
-    emp.delete()
+def delete_emp(request, emp_id):
+    emp = get_object_or_404(Emp, pk=emp_id)
+    if emp.user:
+        # Deactivate the user account associated with the employee
+        emp.user.is_active = False
+        emp.user.save()
+        messages.success(request, f"Employee {emp.user.username}'s account has been deactivated.")
+        # Now proceed to delete the employee record
+        emp.delete()
+        messages.success(request, f"Employee record for {emp.user.username} has been deleted.")
+    else:
+        # Notify if no user account is associated with the employee and delete only the employee record
+        emp.delete()
+        messages.success(request, "Employee record has been deleted, no user account was associated.")
     return redirect("/emp/home/")
 
 @login_required
-def update_emp(request,emp_id):
-    emp=Emp.objects.get(pk=emp_id)
-    print("Yes Bhai")
-    return render(request,"emp/update_emp.html",{
-        'emp':emp
-    })
+def update_emp(request, emp_id):
+    emp = Emp.objects.get(pk=emp_id)
+    # Determine group membership and pass this info to the template
+    is_hr = emp.user.groups.filter(name="HR").exists()
+    is_manager = emp.user.groups.filter(name="Manager").exists()
+
+    context = {
+        'emp': emp,
+        'is_hr': is_hr,
+        'is_manager': is_manager,
+    }
+    return render(request, "emp/update_emp.html", context)
 
 
 @login_required
@@ -150,10 +164,11 @@ def do_update_emp(request, emp_id):
         emp.salary = float(request.POST.get("salary", emp.salary))
         emp.address = request.POST.get("address", emp.address)
         emp.department = request.POST.get("department", emp.department)
-        emp.status = "emp_status" in request.POST  # Checkbox for active/inactive
+        emp.status = "emp_status" in request.POST
 
-        if emp.user:  # Check if there is an associated User object
+        if emp.user:
             emp.user.is_active = emp.status
+            update_user_roles(emp.user, request.POST)
             emp.user.save()
 
         emp.save()
@@ -161,6 +176,20 @@ def do_update_emp(request, emp_id):
         return redirect('/emp/home/')
     else:
         return render(request, "emp/update_emp.html", {'emp': emp})
+
+def update_user_roles(user, post_data):
+    hr_group = Group.objects.get(name='HR')
+    manager_group = Group.objects.get(name='Manager')
+
+    if 'isHR' in post_data and post_data['isHR'] == 'on':
+        user.groups.add(hr_group)
+    else:
+        user.groups.remove(hr_group)
+
+    if 'isManager' in post_data and post_data['isManager'] == 'on':
+        user.groups.add(manager_group)
+    else:
+        user.groups.remove(manager_group)
 
 
 # Adding a new task
@@ -677,3 +706,19 @@ def add_meeting(request):
 @login_required
 def view_more(request):
     return render(request,'emp/task_view_more.html')
+
+@login_required
+def toggle_hr_manager(request, emp_id, group_name):
+    emp = get_object_or_404(Emp, pk=emp_id)
+    group = Group.objects.get(name=group_name)
+    user = emp.user
+
+    if group in user.groups.all():
+        user.groups.remove(group)
+        message = f'Removed {user.username} from {group_name}.'
+    else:
+        user.groups.add(group)
+        message = f'Added {user.username} to {group_name}.'
+
+    messages.success(request, message)
+    return redirect('emp:emp_details', emp_id=emp.id)  # Assuming there's an employee details view to return tos

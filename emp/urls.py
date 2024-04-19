@@ -34,6 +34,8 @@ urlpatterns = [
     path('get-task-employees/<int:task_id>/', get_task_employees, name='get-task-employees'),
     path('add-meeting/', add_meeting, name='add_meeting'),
     path('view-more/', view_more, name='view_more'),
+    path('emp/<int:emp_id>/toggle-role/<str:group_name>/', toggle_hr_manager, name='toggle_hr_manager'),
+
 
 
 
