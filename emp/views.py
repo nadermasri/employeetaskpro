@@ -502,44 +502,76 @@ def calendar_view(request):
 
 @login_required
 def event_data(request):
+    # Retrieve query parameters for filtering
+    show_sprints = request.GET.get('showSprints', 'true') == 'true'
+    show_meetings = request.GET.get('showMeetings', 'true') == 'true'
+    show_tasks = request.GET.get('showTasks', 'true') == 'true'
     # Check if the user is HR or Manager
     user_groups = request.user.groups.values_list('name', flat=True)
     is_hr_or_manager = any(group in user_groups for group in ['HR', 'Manager'])
-    meetings = Meeting.objects.all()
-    # Get sprints for HR/Manager or specific employee
-    if is_hr_or_manager:
-        sprints = Sprint.objects.all()
-    else:
-        user_emp = request.user.emp if hasattr(request.user, 'emp') else None
-        if user_emp:
-            sprints = Sprint.objects.filter(employees=user_emp)
+
+    events = []
+
+    # Get sprints for HR/Manager or specific employee and append to events list
+    if show_sprints:
+        if is_hr_or_manager:
+            sprints = Sprint.objects.all()
         else:
-            return JsonResponse({'message': 'User has no associated employee or is not authorized to view all sprints.'}, status=403)
+            user_emp = request.user.emp if hasattr(request.user, 'emp') else None
+            sprints = Sprint.objects.filter(employees=user_emp) if user_emp else []
 
-    # Create events list from sprints
-    events = [
-        {'title': sprint.title, 'start': sprint.start_date.strftime('%Y-%m-%dT%H:%M:%S'),
-         'end': sprint.end_date.strftime('%Y-%m-%dT%H:%M:%S'), 'allDay': True}
-        for sprint in sprints
-    ]
+        events.extend([
+            {'title': sprint.title, 'start': sprint.start_date.strftime('%Y-%m-%dT%H:%M:%S'),
+             'end': sprint.end_date.strftime('%Y-%m-%dT%H:%M:%S'), 'allDay': True,'color': '#D87889' ,
+                     'extendedProps': {
+            'description': sprint.description,
+             # Replace with actual property names
+        }
+             }
+            for sprint in sprints
+        ])
 
-    # If no events found, send a 404 response
-    events.extend([
-        {
-            'title': meeting.title,
-            'start': meeting.start_time.strftime('%Y-%m-%dT%H:%M:%S'),
-            'end': meeting.end_time.strftime('%Y-%m-%dT%H:%M:%S'),
-            'allDay': False  # or True, based on your model definition
-        } for meeting in meetings
-    ])
+    # Get meetings for HR/Manager or specific employee and append to events list
+    if show_meetings:
+        if is_hr_or_manager:
+            meetings = Meeting.objects.all()
+        else:
+            user_emp = request.user.emp if hasattr(request.user, 'emp') else None
+            meetings = Meeting.objects.filter(participants=user_emp) if user_emp else []
 
-    # If no events found, send a 404 response
-    if not events:
-        return JsonResponse({'message': 'No events found'}, status=404)
-
+        events.extend([
+            {
+                'title': meeting.title,
+                'start': meeting.start_time.strftime('%Y-%m-%dT%H:%M:%S'),
+                'end': meeting.end_time.strftime('%Y-%m-%dT%H:%M:%S'),
+                'allDay': False, # or True, based on your model definition
+                  'extendedProps': {
+            'description': meeting.description,
+             # Replace with actual property names
+        }
+            } for meeting in meetings
+        ])
+    if show_tasks:
+        if is_hr_or_manager:
+            tasks = Task.objects.all()
+        else:
+            user_emp = request.user.emp if hasattr(request.user, 'emp') else None
+            tasks = Task.objects.filter(taskassignee__emp=user_emp) if user_emp else []
+        events.extend([
+            {
+                'title': f"Task Deadline: {task.title}",
+                'start': task.deadline.strftime('%Y-%m-%dT%H:%M:%S'),
+                'allDay': True,
+                'backgroundColor': '#ff9f89',  # You can set a custom color for task deadlines
+                'borderColor': '#ff9f89',
+                  'extendedProps': {
+            'description': task.description,
+             # Replace with actual property names
+        }
+            } for task in tasks if task.deadline  # Only include tasks with a deadline
+        ])
     # Send events as JSON response
     return JsonResponse(events, safe=False)
-
 
 
 @login_required
@@ -615,19 +647,20 @@ def add_meeting(request):
         form = MeetingForm(request.POST)
         if form.is_valid():
             meeting = form.save(commit=False)
-
+            
             # Check for overlapping meetings
             participants = form.cleaned_data.get('participants')
             overlapping_meetings = Meeting.objects.filter(
                 Q(participants__in=participants) & 
                 (Q(start_time__lt=meeting.end_time) & Q(end_time__gt=meeting.start_time))
             ).distinct()
-            
+            print("IM HERE")
             if overlapping_meetings.exists():
                 # Handle the overlap situation, e.g., by returning an error message
+                print("OVERLAPPINGG")
                 messages.error(request, "One or more participants are not available in the given time slot.")
                 return render(request, 'emp/add_meeting.html', {'form': form})
-
+            print()
             # No overlaps, safe to save
             meeting.save()
             form.save_m2m()

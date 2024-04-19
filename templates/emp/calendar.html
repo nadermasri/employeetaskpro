@@ -7,38 +7,73 @@
     <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5/main.min.css" rel='stylesheet' />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/navbar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/calendar.css' %}"> <!-- Link to the custom calendar CSS -->
+    <link rel="stylesheet" href="{% static 'css/calendar.css' %}">
 </head>
 <body>
     {% include 'emp/navbar.html' %}
-
+    <div class="container mt-3 mb-3">
+        <form id="calendar-filters">
+            <input type="checkbox" id="showSprints" name="sprints" checked>
+            <label for="showSprints">Show Sprints</label>
+            <input type="checkbox" id="showMeetings" name="meetings" checked>
+            <label for="showMeetings">Show Meetings</label>
+            <input type="checkbox" id="showTasks" name="tasks" checked>
+            <label for="showTasks">Show Tasks Deadlines</label>
+            <button type="button" onclick="applyFilters()">Apply Filters</button>
+        </form>
+    </div>
     <div id="calendar"></div>
-    <!-- Insert this inside your <body> tag in calendar.html -->
-        <!-- calendar.html -->
-        {% if request.user.groups.all.0.name == "HR" or request.user.groups.all.0.name == "Manager" %}
-        <div class="container mt-3 mb-3">
-            <a href="{% url 'emp:add_sprint' %}" class="btn btn-primary">+ Add Sprint</a>
-        </div>
+    <!-- Add Sprint link if user is HR or Manager -->
+    {% if request.user.groups.all.0.name == "HR" or request.user.groups.all.0.name == "Manager" %}
+    <div class="container mt-3 mb-3">
+        <a href="{% url 'emp:add_sprint' %}" class="btn btn-primary">+ Add Sprint</a>
+    </div>
     {% endif %}
-
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5/main.min.js"></script>
     <script>
+        // Calendar instance
+        var calendar;
+
         document.addEventListener('DOMContentLoaded', function() {
             var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
+            calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
                 headerToolbar: {
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridDay,dayGridWeek,dayGridMonth' // This line adds daily and weekly views
+                    right: 'dayGridDay,dayGridWeek,dayGridMonth'
                 },
-                events: "{% url 'emp:api-events' %}",
+                // Fetch the events from the server with the applied filters
+                events: function(fetchInfo, successCallback, failureCallback) {
+                    var showSprints = document.getElementById('showSprints').checked;
+                    var showMeetings = document.getElementById('showMeetings').checked;
+                    var showTasks = document.getElementById('showTasks').checked;
+                    fetch("{% url 'emp:api-events' %}?start=" + fetchInfo.startStr + "&end=" + fetchInfo.endStr + "&showSprints=" + showSprints + "&showMeetings=" + showMeetings + "&showTasks=" + showTasks)
+                        .then(response => response.json())
+                        .then(events => successCallback(events))
+                        .catch(error => failureCallback(error));
+                },
+                eventDidMount: function(info) {
+                // info.el.setAttribute('title', info.event.extendedProps.description);
+                // Use a simple title attribute for the tooltip
+                var tooltip = info.event.extendedProps.description || 'No details provided.';
+                var element = $(info.el);
+                element.attr('title', tooltip);
+                element.tooltip({ container: 'body' });
+                // tippy(info.el, {
+                //     content: info.event.extendedProps.description,
+                //     // You can add more Tippy.js options here
+                // });
+            }
             });
             calendar.render();
         });
-    </script>
 
+        function applyFilters() {
+            calendar.refetchEvents();
+        }
+    </script>
     <!-- Bootstrap JS and Popper.js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
