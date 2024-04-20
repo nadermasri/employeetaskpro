@@ -69,11 +69,11 @@
                   </tr>
               </thead>
               <tbody>
-                {% for task in completed_tasks %}
+                {% for t in completed_task_assignees %}
                   <tr>
-                      <td>{{ task.title }}</td>
-                      <td>{{ task.description }}</td>
-                      <td>{{ task.deadline|date:"D, d M Y H:i" }}</td>
+                      <td>{{ t.task.title }}</td>
+                      <td>{{ t.task.description }}</td>
+                      <td>{{ t.task.deadline|date:"D, d M Y H:i" }}</td>
                   </tr>
 
                 {% empty %}

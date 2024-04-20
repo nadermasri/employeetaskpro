@@ -279,18 +279,21 @@ def my_tasks(request):
         if new_status == 'Completed':
             task_assignee.progress = 100  # Automatically set progress to 100% if completed
             task_assignee.status = 'Completed'
+            task_assignee.task.status='In Progress'
         elif new_status == 'In Progress' and int(progress_input) > 0:
             task_assignee.progress = int(progress_input)
             task_assignee.status = 'In Progress'
+            task_assignee.task.status='In Progress'
         elif new_status == 'Not Started':
             task_assignee.progress = 0
             task_assignee.status = 'Not Started'
         
         task_assignee.save()
+        task_assignee.task.save()
         return redirect('emp:my_tasks')  # Use path_info to reload the same page
 
     # Retrieve task assignees associated with the user
-    task_assignees = TaskAssignee.objects.filter(emp=user_emp).select_related('task')
+    task_assignees = TaskAssignee.objects.filter(emp=user_emp).exclude(status='Completed').select_related('task')
 
     if sort == 'urgency':
         task_assignees = task_assignees.order_by(Case(
@@ -333,6 +336,9 @@ def hr_task_overview(request):
                     assignee.weight * assignee.progress for assignee in task.taskassignee_set.all()
                 )
                 progress_percentage = weighted_progress / total_weight
+                if progress_percentage==100:
+                    task.status='Completed'
+                    task.save()
             else:
                 progress_percentage = 0
             task.progress_display = f"{progress_percentage}%"
@@ -353,17 +359,16 @@ def emp_dashboard(request):
 
     # Calculate task progress
     task_progress = {
-        'Not Started': task_assignees.filter(task__status='Not Started').count(),
-        'In Progress': task_assignees.filter(task__status='In Progress').count(),
-        'Completed': task_assignees.filter(task__status='Completed').count(),
+        'Not Started': task_assignees.filter(status='Not Started').count(),
+        'In Progress': task_assignees.filter(status='In Progress').count(),
+        'Completed': task_assignees.filter(status='Completed').count(),
     }
 
     # Calculate percentages for each status
     total_tasks = sum(task_progress.values())
-    task_progress_percentage = {status: (count / total_tasks * 100 if total_tasks > 0 else 0) for status, count in task_progress.items()}
-
+    task_progress_percentage = {status: round((count / total_tasks * 100), 2) if total_tasks > 0 else 0 for status, count in task_progress.items()}
     # Get completed tasks
-    completed_task_assignees = task_assignees.filter(task__status='Completed')
+    completed_task_assignees = task_assignees.filter(status='Completed')
 
     context = {
         'employee': user_emp,
