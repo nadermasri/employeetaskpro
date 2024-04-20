@@ -33,7 +33,7 @@ urlpatterns = [
     path('add-sprint/', add_sprint, name='add_sprint'), # Add this line
     path('get-task-employees/<int:task_id>/', get_task_employees, name='get-task-employees'),
     path('add-meeting/', add_meeting, name='add_meeting'),
-    path('view-more/', view_more, name='view_more'),
+    path('task-view-more/<int:task_id>/', task_view_more, name='task_view_more'),
     path('emp/<int:emp_id>/toggle-role/<str:group_name>/', toggle_hr_manager, name='toggle_hr_manager'),
 
 

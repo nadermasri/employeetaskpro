@@ -10,10 +10,11 @@
     <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
 
     <style>
         html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
-        </style>
+    </style>
 </head>
 <body>
     {% include 'emp/navbar.html' %}
@@ -22,7 +23,7 @@
 
   <!-- Header -->
   <header class="w3-container" style="padding-top:22px">
-    <h5><b><i class="fa fa-dashboard"></i> My Dashboard</b></h5>
+    <h5><b><i class="fa fa-dashboard"></i> Task {{id}} Dashboard</b></h5>
   </header>
 
   <div class="w3-row-padding w3-margin-bottom">
@@ -30,7 +31,7 @@
       <div class="w3-container w3-red w3-padding-16">
         <div class="w3-left"><i class="fa fa-comment w3-xxxlarge"></i></div>
         <div class="w3-right">
-          <h3>52</h3>
+          <h3>{{total_feedbacks}}</h3>
         </div>
         <div class="w3-clear"></div>
         <h4>Messages</h4>
@@ -38,75 +39,89 @@
     </div>
     <div class="w3-quarter">
       <div class="w3-container w3-blue w3-padding-16">
-        <div class="w3-left"><i class="fa fa-eye w3-xxxlarge"></i></div>
+        <div class="w3-left">
+          <!-- Conditionally render icons based on progress percentage -->
+          <i class="{% if task.progress_percentage >= 75 %}fa fa-check-circle w3-xxxlarge{% elif task.progress_percentage >= 50 %}fa fa-adjust w3-xxxlarge{% elif task.progress_percentage > 0 %}fa fa-spinner fa-spin w3-xxxlarge{% else %}fa fa-circle w3-xxxlarge{% endif %}"></i>
+        </div>
         <div class="w3-right">
-          <h3>99</h3>
+          <h3>{{task.progress_percentage}}%</h3>
         </div>
         <div class="w3-clear"></div>
-        <h4>Views</h4>
+        <h4>{{task.status}}</h4>
       </div>
     </div>
     <div class="w3-quarter">
       <div class="w3-container w3-teal w3-padding-16">
-        <div class="w3-left"><i class="fa fa-share-alt w3-xxxlarge"></i></div>
+        <div class="w3-left">
+          <i class="{% if task.urgency == 'High' %}fa fa-exclamation-circle w3-xxxlarge{% elif task.urgency == 'Medium' %}fa fa-exclamation-triangle w3-xxxlarge{% else %}fa fa-info-circle w3-xxxlarge{% endif %}"></i>
+        </div>
         <div class="w3-right">
-          <h3>23</h3>
+          <h3>{{task.urgency}}</h3>
         </div>
         <div class="w3-clear"></div>
-        <h4>Shares</h4>
+        <h4>Urgency</h4>
       </div>
     </div>
     <div class="w3-quarter">
       <div class="w3-container w3-orange w3-text-white w3-padding-16">
         <div class="w3-left"><i class="fa fa-users w3-xxxlarge"></i></div>
         <div class="w3-right">
-          <h3>50</h3>
+          <h3>{{total_assignees}}</h3>
         </div>
         <div class="w3-clear"></div>
-        <h4>Users</h4>
+        <h4>Assignees</h4>
       </div>
     </div>
   </div>
+<div class="w3-panel">
+    <div class="w3-row-padding" style="margin:0 -16px">
+        <div class="w3-twothird-center">
+            <h5>Feedback from Assignees</h5>
+            <table class="w3-table w3-striped w3-white">
+                <!-- Loop through feedback entries -->
+                {% for feedback in feedbacks %}
+                <tr>
+                    {% if feedback.created_by == request.user %}
+                        <td><i class="fa fa-user w3-text-blue w3-large"></i></td>
+                        <td>{{ feedback.content }}</td>
+                        <td><i>Me</i></td>
+                    {% else %}
+                    <td><i class="fa fa-users w3-text-yellow w3-large"></i></td>
+                    <td>{{ feedback.content }}</td>
+                    <td><i>{{ feedback.created_by.get_full_name }}</i></td>
+                    {% endif %}
+                    <td><i>{{ feedback.created_at|date:"d M Y H:i" }}</i></td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3">No feedback yet.</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</div>
+<hr>
 
   <div class="w3-panel">
     <div class="w3-row-padding" style="margin:0 -16px">
       <div class="w3-twothird-center">
-        <h5>Feeds</h5>
+        <h5>Overview</h5>
         <table class="w3-table w3-striped w3-white">
           <tr>
-            <td><i class="fa fa-user w3-text-blue w3-large"></i></td>
-            <td>New record, over 90 views.</td>
-            <td><i>10 mins</i></td>
-          </tr>
-          <tr>
-            <td><i class="fa fa-bell w3-text-red w3-large"></i></td>
-            <td>Database error.</td>
-            <td><i>15 mins</i></td>
-          </tr>
-          <tr>
-            <td><i class="fa fa-users w3-text-yellow w3-large"></i></td>
-            <td>New record, over 40 users.</td>
-            <td><i>17 mins</i></td>
-          </tr>
-          <tr>
-            <td><i class="fa fa-comment w3-text-red w3-large"></i></td>
-            <td>New comments.</td>
-            <td><i>25 mins</i></td>
-          </tr>
-          <tr>
             <td><i class="fa fa-bookmark w3-text-blue w3-large"></i></td>
-            <td>Check transactions.</td>
-            <td><i>28 mins</i></td>
+            <td>Title</td>
+            <td><i>{{task.title}}</i></td>
           </tr>
           <tr>
             <td><i class="fa fa-laptop w3-text-red w3-large"></i></td>
-            <td>CPU overload.</td>
-            <td><i>35 mins</i></td>
+            <td>Description</td>
+            <td><i>{{task.description}}</i></td>
           </tr>
           <tr>
-            <td><i class="fa fa-share-alt w3-text-green w3-large"></i></td>
-            <td>New shares.</td>
-            <td><i>39 mins</i></td>
+            <td><i class="fa fa-bell w3-text-red w3-large"></i></td>
+            <td>Deadline</td>
+            <td><i>{{task.deadline}}</i></td>
           </tr>
         </table>
       </div>
@@ -114,98 +129,47 @@
   </div>
   <hr>
   <div class="w3-container">
-    <h5>General Stats</h5>
-    <p>New Visitors</p>
+    <h5>Assignee Progress</h5>
+    <!-- Loop through each assignee and display their progress -->
+    {% for assignee in assignees %}
+    <p>{{ assignee.emp.user.get_full_name }}</p>
     <div class="w3-grey">
-      <div class="w3-container w3-center w3-padding w3-green" style="width:25%">+25%</div>
+        <!-- The width of the progress bar represents the assignee's progress percentage -->
+        <div class="w3-container w3-center w3-padding" style="width:{{ assignee.progress }}%; background-color: {% if assignee.progress < 50 %}#ffcc00{% elif assignee.progress < 75 %}#ff9900{% else %}#4CAF50{% endif %}">
+            {{ assignee.progress }}%
+        </div>
     </div>
-
-    <p>New Users</p>
-    <div class="w3-grey">
-      <div class="w3-container w3-center w3-padding w3-orange" style="width:50%">50%</div>
-    </div>
-
-    <p>Bounce Rate</p>
-    <div class="w3-grey">
-      <div class="w3-container w3-center w3-padding w3-red" style="width:75%">75%</div>
-    </div>
+    {% empty %}
+    <p>No assignees found.</p>
+    {% endfor %}
   </div>
   <hr>
 
   <div class="w3-container">
-    <h5>Countries</h5>
+    <h5>Send Message To</h5>
     <table class="w3-table w3-striped w3-bordered w3-border w3-hoverable w3-white">
-      <tr>
-        <td>United States</td>
-        <td>65%</td>
-      </tr>
-      <tr>
-        <td>UK</td>
-        <td>15.7%</td>
-      </tr>
-      <tr>
-        <td>Russia</td>
-        <td>5.6%</td>
-      </tr>
-      <tr>
-        <td>Spain</td>
-        <td>2.1%</td>
-      </tr>
-      <tr>
-        <td>India</td>
-        <td>1.9%</td>
-      </tr>
-      <tr>
-        <td>France</td>
-        <td>1.5%</td>
-      </tr>
+        {% for assignee in assignees %}
+        <tr>
+            <td>
+                <!-- Link for assignee name that redirects to fetch messages -->
+                <a href="{% url 'emp:messaging' %}">
+                    {{ assignee.emp.user.get_full_name }}
+                </a>
+            </td>
+            <td>
+                <!-- Message icon link -->
+                <a href="{% url 'emp:messaging' %}">
+                    <i class="fa fa-envelope w3-large"></i>
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2">No assignees available.</td>
+        </tr>
+        {% endfor %}
     </table><br>
-    <button class="w3-button w3-dark-grey">More Countries  <i class="fa fa-arrow-right"></i></button>
-  </div>
-  <hr>
-  <div class="w3-container">
-    <h5>Recent Users</h5>
-    <ul class="w3-ul w3-card-4 w3-white">
-      <li class="w3-padding-16">
-        <img src="/w3images/avatar2.png" class="w3-left w3-circle w3-margin-right" style="width:35px">
-        <span class="w3-xlarge">Mike</span><br>
-      </li>
-      <li class="w3-padding-16">
-        <img src="/w3images/avatar5.png" class="w3-left w3-circle w3-margin-right" style="width:35px">
-        <span class="w3-xlarge">Jill</span><br>
-      </li>
-      <li class="w3-padding-16">
-        <img src="/w3images/avatar6.png" class="w3-left w3-circle w3-margin-right" style="width:35px">
-        <span class="w3-xlarge">Jane</span><br>
-      </li>
-    </ul>
-  </div>
-  <hr>
-
-  <div class="w3-container">
-    <h5>Recent Comments</h5>
-    <div class="w3-row">
-      <div class="w3-col m2 text-center">
-        <img class="w3-circle" src="/w3images/avatar3.png" style="width:96px;height:96px">
-      </div>
-      <div class="w3-col m10 w3-container">
-        <h4>John <span class="w3-opacity w3-medium">Sep 29, 2014, 9:12 PM</span></h4>
-        <p>Keep up the GREAT work! I am cheering for you!! Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p><br>
-      </div>
-    </div>
-
-    <div class="w3-row">
-      <div class="w3-col m2 text-center">
-        <img class="w3-circle" src="/w3images/avatar1.png" style="width:96px;height:96px">
-      </div>
-      <div class="w3-col m10 w3-container">
-        <h4>Bo <span class="w3-opacity w3-medium">Sep 28, 2014, 10:15 PM</span></h4>
-        <p>Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p><br>
-      </div>
-    </div>
-  </div>
-  <br>
-
+</div>
 
 <script>
 // Get the DIV with overlay effect

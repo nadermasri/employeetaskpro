@@ -336,12 +336,14 @@ def hr_task_overview(request):
                     assignee.weight * assignee.progress for assignee in task.taskassignee_set.all()
                 )
                 progress_percentage = weighted_progress / total_weight
+                task.progress_percentage=progress_percentage
+                task.save()
                 if progress_percentage==100:
                     task.status='Completed'
                     task.save()
             else:
                 progress_percentage = 0
-            task.progress_display = f"{progress_percentage}%"
+            task.progress_display = f"{round(progress_percentage,2)}%"
         else:
             task.progress_display = task.status  # Not in progress, show status directly
         tasks_with_progress.append(task)
@@ -709,8 +711,29 @@ def add_meeting(request):
     return render(request, "emp/add_meeting.html", {'form': form})
 
 @login_required
-def view_more(request):
-    return render(request,'emp/task_view_more.html')
+def task_view_more(request, task_id):
+    # Retrieve the task using the task_id
+    task = get_object_or_404(Task, pk=task_id)
+
+    # Get all assignees related to this task
+    assignees = TaskAssignee.objects.filter(task=task).select_related('emp')
+    # Get all feedback related to this task
+    feedbacks = Feedback.objects.filter(task=task)
+
+    # Calculating the sum of all feedbacks and assignees
+    total_feedbacks = feedbacks.count()
+    total_assignees = assignees.count()
+
+    context = {
+        'id':task_id,
+        'task': task,
+        'assignees': assignees,
+        'feedbacks': feedbacks,
+        'total_feedbacks': total_feedbacks,
+        'total_assignees': total_assignees,
+    }
+
+    return render(request, 'emp/task_view_more.html', context)
 
 @login_required
 def toggle_hr_manager(request, emp_id, group_name):
