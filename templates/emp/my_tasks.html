@@ -51,11 +51,11 @@
                             {% csrf_token %}
                             <input type="hidden" name="task_id" value="{{ tp.task_assignee.task.id }}">
                             <select name="status" class="status-dropdown" onchange="checkStatus(this)">
-                                <option value="Not Started" {% if tp.task_assignee.task.status == "Not Started" %}selected{% endif %}>Not Started</option>
-                                <option value="In Progress" {% if tp.task_assignee.task.status == "In Progress" %}selected{% endif %}>In Progress</option>
-                                <option value="Completed" {% if tp.task_assignee.task.status == "Completed" %}selected{% endif %}>Completed</option>
+                                <option value="Not Started" {% if tp.task_assignee.status == "Not Started" %}selected{% endif %}>Not Started</option>
+                                <option value="In Progress" {% if tp.task_assignee.status == "In Progress" %}selected{% endif %}>In Progress</option>
+                                <option value="Completed" {% if tp.task_assignee.status == "Completed" %}selected{% endif %}>Completed</option>
                             </select>
-                            <input type="number" name="progress" class="progress-input" style="display: none;" min="0" max="100" placeholder="Enter progress %" value="{{ tp.task_assignee.progress }}">
+                            <input type="number" name="progress" class="progress-input" style="display: none;" min="{{ tp.task_assignee.progress }}" max="100" placeholder="Enter progress %" value="{{ tp.task_assignee.progress }}">
                             <button type="submit" class="submit-btn" style="display: none;">Submit</button>
                         </form>
                     </td>
@@ -94,21 +94,19 @@ document.addEventListener('DOMContentLoaded', function() {
         checkStatus(selectElement); // Initialize form display based on current status
 
         selectElement.addEventListener('change', function() {
-            var form = this.closest('form');  // Find the nearest form element
+            var form = this.closest('form');
             var progressInput = form.querySelector('.progress-input');
             var submitBtn = form.querySelector('.submit-btn');
 
-            // Set progress and display status based on the selected status
             if (this.value === 'In Progress') {
                 progressInput.style.display = 'block';
                 submitBtn.style.display = 'block';
+                progressInput.min = currentProgress;
             } else {
                 progressInput.style.display = 'none';
-                submitBtn.style.display = 'block'; // Show submit button to allow form submission
+                submitBtn.style.display = 'block';
                 progressInput.value = this.value === 'Completed' ? 100 : 0;
             }
-
-            form.submit(); // Submit the form whenever status changes
         });
     });
 });
@@ -118,16 +116,17 @@ function checkStatus(selectElement) {
     var progressInput = form.querySelector('.progress-input');
     var submitBtn = form.querySelector('.submit-btn');
 
-    // Adjust form elements based on the current status
     if (selectElement.value === 'In Progress') {
         progressInput.style.display = 'block';
         submitBtn.style.display = 'block';
+        progressInput.min = currentProgress;
     } else {
         progressInput.style.display = 'none';
-        submitBtn.style.display = 'none'; // Hide submit button initially for 'Not Started' or 'Completed'
+        submitBtn.style.display = 'none';
         progressInput.value = selectElement.value === 'Completed' ? 100 : 0;
     }
 }
+
 
         </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>

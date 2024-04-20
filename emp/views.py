@@ -270,24 +270,24 @@ def my_tasks(request):
     user_emp = request.user.emp if hasattr(request.user, 'emp') else None
     sort = request.GET.get('sort', 'deadline')  # Default sorting by deadline
 
+
     if request.method == 'POST':
         task_id = request.POST.get('task_id')
         new_status = request.POST.get('status')
         progress_input = request.POST.get('progress', 0)  # Default to 0 if not provided
         task_assignee = get_object_or_404(TaskAssignee, task_id=task_id, emp=user_emp)
-        
         if new_status == 'Completed':
             task_assignee.progress = 100  # Automatically set progress to 100% if completed
-            task_assignee.task.status = 'Completed'
+            task_assignee.status = 'Completed'
         elif new_status == 'In Progress' and int(progress_input) > 0:
             task_assignee.progress = int(progress_input)
-            task_assignee.task.status = 'In Progress'
+            task_assignee.status = 'In Progress'
         elif new_status == 'Not Started':
             task_assignee.progress = 0
-            task_assignee.task.status = 'Not Started'
+            task_assignee.status = 'Not Started'
         
         task_assignee.save()
-        return HttpResponseRedirect(request.path_info)  # Use path_info to reload the same page
+        return redirect('emp:my_tasks')  # Use path_info to reload the same page
 
     # Retrieve task assignees associated with the user
     task_assignees = TaskAssignee.objects.filter(emp=user_emp).select_related('task')
@@ -305,7 +305,7 @@ def my_tasks(request):
     tasks_with_progress = [{
         'task_assignee': task_assignee,
         'progress': task_assignee.progress,
-        'status': task_assignee.task.status
+        'status': task_assignee.status
     } for task_assignee in task_assignees]
 
     context = {
