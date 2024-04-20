@@ -501,7 +501,7 @@ def add_task_feedback(request, task_id):
             messages.success(request, 'Feedback added successfully.')
         else:
             messages.error(request, 'Feedback content cannot be empty.')
-    return redirect('emp:hr_task_overview')
+    return redirect('emp:task_view_more', task_id)
 
 
 @login_required
