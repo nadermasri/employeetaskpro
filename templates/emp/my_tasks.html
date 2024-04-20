@@ -115,6 +115,7 @@ function checkStatus(selectElement) {
     var form = selectElement.closest('form');
     var progressInput = form.querySelector('.progress-input');
     var submitBtn = form.querySelector('.submit-btn');
+    var currentProgress = parseInt(progressInput.value);
 
     if (selectElement.value === 'In Progress') {
         progressInput.style.display = 'block';
