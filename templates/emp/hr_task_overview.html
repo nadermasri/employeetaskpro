@@ -8,16 +8,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"
           rel="stylesheet" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi"
           crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/hr_task_overview.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
 </head>
 <body>
 {% include 'emp/navbar.html' %}
 <div class="container my-4">
     <h2>All Tasks Overview</h2>
+    <div class="table-responsive-custom">
     <table class="table">
         <thead>
             <tr>
                 <th>Task Name</th>
-                <th>Description</th>
                 <th>Assignees</th>
                 <th>Deadline</th>
                 <th>Status</th>
@@ -28,7 +31,6 @@
             {% for task in tasks %}
             <tr>
                 <td>{{ task.title }}</td>
-                <td>{{ task.description }}</td>
                 <td>
                     {% for assignee in task.taskassignee_set.all %}
                         <li>{{ assignee.emp.firstname }} {{ assignee.emp.lastname }} - Weight: {{ assignee.weight }}</li>
@@ -37,15 +39,22 @@
                 <td>{{ task.deadline|date:"D, d M Y" }}</td>
                 <td>{{ task.progress_display }}</td>  
                 <td>
-                    <!-- Delete button -->
-                    <form action="{% url 'emp:delete_task' task.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this task?');">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                    <!-- Assign employees button -->
-                    <a href="{% url 'emp:assign_task' task.id %}" class="btn btn-info btn-sm mt-2">Assign Employees</a>
-                     <!-- View More button -->
-                     <a href="{% url 'emp:task_view_more' task.id %}" class="btn btn-info btn-sm mt-2">View More</a>
+                        <!-- Assign employees button -->
+                        <a href="{% url 'emp:assign_task' task.id %}" class="btn btn-assign btn-sm">
+                            <i class="fa fa-user-plus"></i>Assign Employees
+                        </a>
+                        <!-- View More button -->
+                        <a href="{% url 'emp:task_view_more' task.id %}" class="btn btn-view-more btn-sm">
+                            <i class="fa fa-info-circle"></i>View More
+                        </a>
+                        <!-- Delete button -->
+                        <form action="{% url 'emp:delete_task' task.id %}" method="post" onsubmit="return confirm('Are you sure you want to delete this task?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-delete btn-sm">
+                                <i class="fa fa-trash"></i>Delete
+                            </button>
+                        </form>
+
                 </td>
             </tr>
             {% empty %}
@@ -55,6 +64,7 @@
             {% endfor %}
         </tbody>
     </table>
+</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>

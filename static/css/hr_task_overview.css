@@ -1,0 +1,118 @@
+/* Use Bootstrap's padding and margin utility classes instead of custom spacing */
+/* Global Settings */
+html, body {
+    height: 100%;
+    background-color: #f4f7f6; /* Soft background color */
+  }
+  
+  /* Navbar Customizations */
+  /* Add your navbar styles here, if any */
+  
+  /* Container Customizations */
+  .container {
+    max-width: 1140px; /* Set max-width to match Bootstrap's container size */
+  }
+  
+  /* Table Customizations */
+  .table {
+    background-color: white; /* White background for contrast */
+    border-collapse: separate;
+    border-spacing: 0 1em; /* Separate rows */
+  }
+  
+  /* Table Header Customizations */
+  .table thead th {
+    background-color: #003366; /* Navy blue background */
+    color: white; /* White text */
+    border: none; /* Remove borders */
+    padding-top: 1em; /* Spacing above text */
+    padding-bottom: 1em; /* Spacing below text */
+  }
+  
+  /* Table Body Customizations */
+  .table tbody tr {
+    box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for each row */
+    border-radius: 5px; /* Rounded corners for each row */
+  }
+  
+  .table tbody tr td {
+    vertical-align: middle; /* Center the content vertically */
+  }
+  
+  /* Task Action Buttons */
+  .table .btn {
+    font-size: 0.8em; /* Smaller font size for buttons */
+    padding: 0.375rem 0.75rem; /* Bootstrap's default padding for .btn-sm */
+  }
+  
+  /* Hover Effect for Rows */
+  .table tbody tr:hover {
+    background-color: #f9fafb; /* Lighter background on hover */
+    cursor: default; /* Default cursor to indicate non-clickable rows */
+  }
+  
+  /* No Tasks Available Style */
+  .table .no-tasks {
+    padding: 2em; /* More padding for the no tasks available message */
+    color: #6c757d; /* Bootstrap's default text-muted color */
+  }
+  
+  /* Responsive Typography */
+  @media (max-width: 768px) {
+    h2 {
+      font-size: 1.75rem; /* Slightly smaller heading on small screens */
+    }
+  }
+  
+  /* Responsive Table */
+  @media (max-width: 992px) {
+    .table-responsive-custom {
+      overflow-x: auto; /* Horizontal scroll on small devices */
+    }
+  }
+  
+
+  /* Button General Style */
+.btn {
+    margin: 5px; /* Adds spacing around the buttons */
+    font-weight: normal; /* Lighter font-weight */
+  }
+  
+  /* Assign Button Style */
+  .btn-assign {
+    background-color: #5cb85c; /* Green color */
+  }
+  
+  /* View More Button Style */
+  .btn-view-more {
+    background-color: #5bc0de; /* Light blue color */
+  }
+  
+  /* Delete Button Style */
+  .btn-delete {
+    background-color: #d9534f; /* Red color */
+  }
+  
+  /* Icons for buttons */
+  .btn i {
+    margin-right: 5px; /* Space between icon and text */
+  }
+  
+  /* Hover Effect for Buttons */
+  .btn:hover {
+    opacity: 0.9; /* Slight opacity on hover for all buttons */
+  }
+  
+  /* Specific hover effects */
+  .btn-assign:hover {
+    background-color: darken(#5cb85c, 10%); /* Darken on hover */
+  }
+  
+  .btn-view-more:hover {
+    background-color: darken(#5bc0de, 10%);
+  }
+  
+  .btn-delete:hover {
+    background-color: darken(#d9534f, 10%);
+  }
+  
