@@ -39,7 +39,8 @@
                       <th>Address</th>
                       <th>Status</th>
                       <th>Department</th>
-                      <th>Progress</th>
+                      <th>Report Count</th> 
+                      <th>Level of Severity</th> 
                       <th>Action</th>
                     </tr>
                   </thead>
@@ -62,11 +63,16 @@
                       <td>{{ e.address }}</td>
                       <td>{{ e.status|yesno:"Active,Inactive" }}</td>
                       <td>{{ e.department }}</td>
+                      <td>{{ e.report_count }}</td>
                       <td>
-                        {% if e.progress_percentage %}
-                          {{ e.progress_percentage|floatformat:2 }}%
-                        {% else %}
-                          No tasks assigned
+                        {% if e.report_count == 0 %}
+                        <span style="color: green;">No Flag</span>
+                        {% elif e.report_count == 1 %}
+                        <span style="color: rgb(188, 188, 27);">Yellow</span>
+                        {% elif e.report_count == 2 or e.report_count == 3 %}
+                        <span style="color: orange;">Orange</span>
+                        {% elif e.report_count >= 4 %}
+                        <span style="color: red;">Red</span>
                         {% endif %}
                       </td>
                       <td>

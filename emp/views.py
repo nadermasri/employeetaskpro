@@ -38,9 +38,13 @@ def emp_home(request):
         messages.error(request, "You do not have permission to access this page.")
         return redirect('emp:emp_dashboard')
 
-    # If the user is HR or Manager, show the employee tables
-    emps = Emp.objects.all()
-    # Iterate through each employee to calculate completed tasks count
+    emps = Emp.objects.all().annotate(
+        report_count=Count(
+            'user__whistleblowing_cases',  # Adjust 'user' to the actual attribute name if different
+            filter=Q(user__whistleblowing_cases__status__in=['Submitted', 'Open', 'Pending', 'Under Investigation']),
+            distinct=True
+        )
+    )
     for emp in emps:
         tasks_assigned_to_employee = Task.objects.filter(taskassignee__emp=emp)
         completed_tasks_count = tasks_assigned_to_employee.filter(status='Completed').count()
