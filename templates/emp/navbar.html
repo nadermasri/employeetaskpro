@@ -33,29 +33,27 @@
                             <li><a class="dropdown-item" href="/emp/home/">View Employees</a></li>
                         </ul>
                     </li>
+                    {% endif %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTasks" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             Tasks
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownTasks">
+                            {% if is_hr_or_manager %}
                             <li><a class="dropdown-item" href="/emp/add-task/">Add Task</a></li>
+                            {% endif %}
                             <li><a class="dropdown-item" href="/emp/my-tasks/">View Tasks</a></li>
+                            {% if is_hr_or_manager %}
                             <li><a class="dropdown-item" href="/emp/hr-tasks/">Employee Tasks Overview</a></li>
+                            {% endif %}
                         </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="/emp/calendar/">Calendar</a> 
                     </li>
+                    {% if is_hr_or_manager %}
                     <li class="nav-item">
                         <a class="nav-link" href="/emp/add-meeting/">Schedule Meeting</a> 
-                    </li>
-                    {% endif %}
-                    {% if is_employee %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="/emp/my-tasks/">View Tasks</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/emp/calendar/">Calendar</a> 
                     </li>
                     {% endif %}
                     <li class="nav-item dropdown">
