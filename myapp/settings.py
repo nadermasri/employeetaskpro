@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'myapp.wsgi.application'
 
 LOGIN_URL = 'emp:custom_login'
 LOGIN_REDIRECT_URL = 'emp:emp_home'
-LOGOUT_REDIRECT_URL = 'emp:custom_login'
+LOGOUT_REDIRECT_URL = 'emp:index'
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
