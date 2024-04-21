@@ -45,7 +45,19 @@
     background-color: white;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: box-shadow 0.3s;
-  }
+    display: flex; /* Flex layout to accommodate dynamic content size */
+    flex-direction: column; /* Stack children vertically */
+    justify-content: space-between; /* Space content nicely */
+}
+
+.w3-card img {
+    width: 100%; /* Ensure the image covers the full card width */
+    height: auto; /* Auto-adjust height to maintain aspect ratio */
+}
+
+.w3-card .w3-container {
+    padding: 15px; /* Padding inside the card container */
+}
   .w3-card .w3-jumbo,
   .w3-card h3,
   .w3-card i,
@@ -167,18 +179,48 @@
 
 
 /* Team Section Styles */
+#team .w3-card {
+  display: flex; /* Use flex layout */
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center children horizontally */
+  justify-content: center; /* Center children vertically */
+  text-align: center; /* Ensure text is centered */
+  height: 100%; /* Take full height of the container */
+  padding: 20px; /* Add padding inside the card */
+}
+
 #team .w3-card img {
-  height: auto; /* Ensure the image scales correctly */
-  max-height: 300px; /* Adjust as necessary */
+  max-width: 50%; /* Limit the image width */
+  height: auto; /* Maintain aspect ratio */
+  margin-bottom: 15px; /* Space between image and text */
+}
+
+#team .w3-container {
+  width: 100%; /* Container takes full width */
 }
 
 #team .w3-container h3 {
-  font-size: 24px; /* Size of the name */
-  color: var(--primary-color); /* Navy blue for the name */
+  margin: 10px 0; /* Add margin to the top and bottom of the name */
+  font-size: 1.2em; /* Adjust font size as needed */
 }
 
 #team .w3-opacity {
-  color: var(--text-color); /* Dark navy for job title */
+  font-size: 1em; /* Adjust font size for position */
+  color: var(--text-color); /* Consistent text color */
+}
+
+/* Ensure that cards are equally spaced and centered */
+#team .w3-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1 1 33%; /* Distribute space evenly */
+}
+
+@media only screen and (max-width: 600px) {
+  #team .w3-col {
+    flex: 1 1 100%; /* Full width on small screens */
+  }
 }
 
 #team p {
@@ -196,4 +238,8 @@
     width: 100%; /* Full width on small screens */
     margin-bottom: 20px; /* Space between cards on small screens */
   }
+  .w3-card {
+    margin-bottom: 20px; /* Space between cards on small screens */
 }
+}
+
