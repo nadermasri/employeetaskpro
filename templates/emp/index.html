@@ -33,7 +33,10 @@
       <h1 class="w3-xxxlarge w3-animate-bottom" style="font-weight: 700; color: white;">Employee TaskManager Pro</h1>
       {% if request.user.is_authenticated %}
       <div class="w3-padding-32">
-        <button class="w3-btn w3-xlarge" onclick="location.href='{% url 'logout' %}'" style="font-weight:900;">Logout</button>
+        <form action="{% url 'logout' %}" method="post" style="display: inline;">
+          {% csrf_token %}
+          <button type="submit" class="w3-btn w3-xlarge" style="font-weight:900;">Logout</button>
+        </form>
       </div>
       {% else %}
       <div class="w3-padding-32">
