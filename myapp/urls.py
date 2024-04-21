@@ -22,6 +22,7 @@ from django.contrib.auth import views as auth_views
 # from django.contrib.auth.views import LogoutView
 from emp.views import add_sprint
 from emp.views import add_meeting
+from emp.views import home_view
 # from emp import views
 
 
