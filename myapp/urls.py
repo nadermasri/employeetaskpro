@@ -29,10 +29,10 @@ from emp.views import add_meeting
 urlpatterns = [
     path('emp/', include('emp.urls', namespace='emp')),
     path('login/', custom_login, name='custom_login'),
-    path('logout/', auth_views.LogoutView.as_view(next_page='emp:custom_login'), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='emp:home_view'), name='logout'),
     path('accounts/', include('django.contrib.auth.urls')),  # make sure that your project's URL configuration includes Django's authentication views. If you haven't already, add the following line to your urls.py file in the main project directory 
     path('admin/', admin.site.urls),
-    path("",fun.emp_home),
+    path("",fun.home_view),
     path("index/",fun.emp_home),
     path('add-sprint/', add_sprint, name='add_sprint'),
     path('add-meeting/', add_meeting, name='add_meeting')

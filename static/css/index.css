@@ -1,0 +1,199 @@
+
+:root {
+    --primary-color: #003366; /* Navy blue */
+    --accent-color: #6699CC; /* Lighter navy or sky blue */
+    --background-color: #F7F7F7; /* Light grey background */
+    --text-color: #002244; /* Dark navy for text */
+  }
+  
+  /* Background and Text Color */
+  body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+  }
+  
+  /* Header Styles */
+  header.w3-container {
+    background-color: var(--primary-color);
+    color: white; /* For text on navy background */
+  }
+  
+  /* Main Title */
+  h1.w3-xxxlarge {
+    font-weight: bold;
+    color: white; /* White color for the main title on navy background */
+  }
+  
+  /* Button Styles */
+  button.w3-btn {
+    background-color: var(--accent-color);
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+  }
+  
+  /* On hover - Button */
+  button.w3-btn:hover {
+    background-color: darken(var(--accent-color), 10%);
+    /* Other hover styles */
+  }
+  
+  /* Card Styles */
+  .w3-card {
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s;
+  }
+  .w3-card .w3-jumbo,
+  .w3-card h3,
+  .w3-card i,
+  .w3-card p {
+    color: var(--primary-color); /* Make all text inside the card white */
+  }
+
+  .w3-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  }
+  
+  @keyframes floatBubbles {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  .header-background {
+    position: relative;
+    background-color: var(--primary-color);
+    overflow: hidden; /* Keeps pseudo-elements within the bounds of the header */
+  }
+
+  .header-background::before,
+  .header-background::after {
+    content: '';
+    position: absolute;
+    width: 100px; /* Adjust the size if needed */
+    height: 100px; /* Adjust the size if needed */
+    background-image:  var(--header-bg-image); /* Check that this variable is correctly defined in the HTML */
+    background-size: contain; /* Ensure the entire image is visible */
+    background-repeat: no-repeat; /* Prevent the image from tiling */
+    opacity: 0.2; /* Adjust if you want it more or less visible */
+    animation: floatBubbles 3s ease-in-out infinite alternate;
+  }
+
+  .header-background::before {
+    top: 20%; /* Adjust to position correctly within the header */
+    left: 5%;
+    transform: translate(-50%, -50%); /* Center the image */
+  }
+  
+  .header-background::after {
+    top: 50%;
+    right: 20%;
+    transform: translate(50%, -50%); /* Center the image */
+  }
+  .animated-icon {
+    position: absolute;
+    width: 100px; /* Adjust the size as needed */
+    height: 100px; /* Adjust the size as needed */
+    background-image: url('/static/images/managing_icon.png'); /* Set the path to your icon */
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.2; /* Adjust the opacity as needed */
+    animation: floatBubbles 3s ease-in-out infinite;
+    animation-delay: var(--animation-delay); /* Use the custom property for delay */
+  }
+  
+  /* You can position each icon differently using nth-of-type or additional classes */
+  .animated-icon:nth-of-type(1) {
+    top: 50%;
+    left: 10%;
+  }
+  
+  .animated-icon:nth-of-type(2) {
+    top: 50%;
+    left: 30%; /* Adjust positioning as needed */
+  }
+  
+  .animated-icon:nth-of-type(3) {
+    top: 50%;
+    right: 10%;
+  }
+  .animated-icon:nth-of-type(4) {
+    top: 5%;
+    left: 20%;
+    background-image: url('/static/images/people_icon.png'); /* Set the path to your icon */
+  }
+  .animated-icon:nth-of-type(5) {
+    top: 5%;
+    right: 10%;
+    background-image: url('/static/images/people_icon.png'); /* Set the path to your icon */
+  }
+
+  /* Style for the feature cards */
+.feature-card {
+    border: 1px solid #e1e1e1; /* Light grey border for a subtle look */
+    padding: 16px;
+    border-radius: 4px; /* Rounded corners */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions for hover effects */
+  }
+  
+  /* Hover effect for feature cards */
+  .feature-card:hover {
+    transform: translateY(-5px); /* Slightly raise the card */
+    box-shadow: 0 10px 20px rgba(28, 4, 243, 0.1); /* Soft shadow for depth */
+  }
+  
+  /* Style for the icons */
+  .feature-card .w3-jumbo {
+    color: #003366; /* Navy blue color for the icons */
+  }
+  
+  /* Style for the headings */
+  .feature-card .w3-large {
+    color: #003366; /* Navy blue color for the text */
+    font-weight: bold; /* Make the text bold */
+  }
+  
+  /* Paragraph style */
+  .feature-card p {
+    color: #555; /* Darker grey for the paragraph text */
+    line-height: 1.6; /* Increase line-height for better readability */
+  }
+
+
+/* Team Section Styles */
+#team .w3-card img {
+  height: auto; /* Ensure the image scales correctly */
+  max-height: 300px; /* Adjust as necessary */
+}
+
+#team .w3-container h3 {
+  font-size: 24px; /* Size of the name */
+  color: var(--primary-color); /* Navy blue for the name */
+}
+
+#team .w3-opacity {
+  color: var(--text-color); /* Dark navy for job title */
+}
+
+#team p {
+  color: #777; /* A lighter shade for the description */
+}
+
+/* Hover effect for team cards */
+#team .w3-card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+}
+
+/* Responsive columns for team members */
+@media only screen and (max-width: 600px) {
+  .w3-col {
+    width: 100%; /* Full width on small screens */
+    margin-bottom: 20px; /* Space between cards on small screens */
+  }
+}

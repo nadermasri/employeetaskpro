@@ -12,9 +12,10 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" integrity="sha512-FYzh1hF5gn2FeWm+G6YrBuK2U1NKB7+kmZm+xvgsZSB5n2SbY29ZgFyznJBo+HS8PjwhKoH8jCVFQ7Q1QtCqjQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0aeade;">
+    {% if request.user.is_authenticated %}
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color:  #003366">
         <div class="container-fluid">
-            <a class="navbar-brand" href="/emp/emp-dashboard/">EmployeeTaskPro</a>
+            <a class="navbar-brand" href="/emp/">EmployeeTaskPro</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
@@ -102,6 +103,39 @@
             </div>
         </div>
     </nav>
+    {% else %}
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color:  #003366">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/emp/">EmployeeTaskPro</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#about">About</a> 
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#team">Team</a> 
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <form action="{% url 'custom_login' %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-link nav-link" style="padding: 0; border: none; background: none; margin-right: 20px;">Login</button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endif %}
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!-- jQuery -->

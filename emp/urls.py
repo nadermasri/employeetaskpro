@@ -4,6 +4,7 @@ from .views import *
 
 app_name = 'emp'
 urlpatterns = [
+    path('', home_view, name='home'),
     path('update-task-status/<int:task_id>/', update_task_status, name='update_task_status'),
     path("home/", emp_home, name='emp_home'),
     path('messages/', messaging, name='messaging'),  # New unified path

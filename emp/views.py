@@ -22,7 +22,12 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 import json
 from django.db.models import Q
+from django.contrib.auth import logout
 
+
+
+def home_view(request):
+    return render(request, 'emp/index.html')
 
 
 @login_required

@@ -1,0 +1,167 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Employee Management System</title>
+    <link rel="stylesheet" href="{% static 'css/index.css' %}">
+ <!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700&family=Open+Sans&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css">
+  <style>
+    :root {
+    --header-bg-image: url("{% static 'images/task_icon.jpg' %}");
+  }
+  </style>
+  </head>
+  <body>
+    
+    {% include 'emp/navbar.html' %}
+  
+  <!-- Header -->
+  <header class=" header-background w3-container w3-theme w3-padding" id="myHeader">
+    <div class="animated-icon" style="--animation-delay: 0s;"></div>
+    <div class="animated-icon" style="--animation-delay: 1s;"></div>
+    <div class="animated-icon" style="--animation-delay: 2s;"></div>
+    <div class="animated-icon" style="--animation-delay: 2s;"></div>
+    <div class="animated-icon" style="--animation-delay: 2s;"></div>
+    <div class="w3-center">
+      <h4 style="color: var(--secondary-color);">WELCOME TO</h4>
+      <h1 class="w3-xxxlarge w3-animate-bottom" style="font-weight: 700; color: white;">Employee TaskManager Pro</h1>
+      {% if request.user.is_authenticated %}
+      <div class="w3-padding-32">
+        <button class="w3-btn w3-xlarge" onclick="location.href='{% url 'logout' %}'" style="font-weight:900;">Logout</button>
+      </div>
+      {% else %}
+      <div class="w3-padding-32">
+        <button class="w3-btn w3-xlarge" onclick="location.href='{% url 'custom_login' %}'" style="font-weight:900;">Login</button>
+      </div>
+      {% endif %}
+    </div>
+  </header>
+  
+  
+  <!-- Modal -->
+  <div id="id01" class="w3-modal">
+      <div class="w3-modal-content w3-card-4 w3-animate-top">
+        <header class="w3-container w3-theme-l1"> 
+          <span onclick="document.getElementById('id01').style.display='none'"
+          class="w3-button w3-display-topright">×</span>
+          <h4>Oh snap! We just showed you a modal..</h4>
+          <h5>Because we can <i class="fa fa-smile-o"></i></h5>
+        </header>
+        <div class="w3-padding">
+          <p>Cool huh? Ok, enough teasing around..</p>
+          <p>Go to our <a class="w3-btn" href="/w3css/default.asp">W3.CSS Tutorial</a> to learn more!</p>
+        </div>
+        <footer class="w3-container w3-theme-l1">
+          <p>Modal footer</p>
+        </footer>
+      </div>
+  </div>
+  
+  <div class="w3-row-padding w3-center w3-margin-top">
+  <div class="w3-third">
+    <div class="w3-card w3-container" style="min-height:400px">
+    <h3>Streamline Your Tasks</h3><br>
+    <i class="fa fa-list-ul w3-margin-bottom w3-text-theme" style="font-size:120px"></i>
+    <p>Automate task scheduling and reminders.</p>
+    <p>Visualize your workflow with Kanban boards.</p>
+    <p>Integrate seamlessly with existing project management tools.</p>
+    </div>
+  </div>
+  
+  <div class="w3-third">
+    <div class="w3-card w3-container" style="min-height:400px">
+    <h3>Enhance Productivity</h3><br>
+    <i class="fa fa-line-chart w3-margin-bottom w3-text-theme" style="font-size:120px"></i>
+    <p>Gain insights with productivity analytics.</p>
+    <p>Customize workflows to fit your team's needs.</p>
+    <p>Access a suite of productivity-enhancing tools.</p>
+    </div>
+  </div>
+  
+  <div class="w3-third">
+    <div class="w3-card w3-container" style="min-height:400px">
+    <h3>Real-Time Updates</h3><br>
+    <i class="fa fa-bell-o w3-margin-bottom w3-text-theme" style="font-size:120px"></i>
+  <p>Stay informed with instant notifications.</p>
+  <p>Track progress with live status updates.</p>
+  <p>Ensure timely delivery with real-time collaboration features.</p>
+    </div>
+  </div>
+  </div>
+<!-- About Section -->
+<div class="w3-container" style="padding:50px 16px" id="about">
+    <h3 class="w3-center">ABOUT THE COMPANY</h3>
+    <p class="w3-center w3-large">Key features of our task management system</p>
+    <div class="w3-row-padding w3-center" style="margin-top:64px">
+      <div class="w3-quarter feature-card">
+        <i class="fa fa-list-ol w3-margin-bottom w3-jumbo"></i>
+        <p class="w3-large">Task Organization</p>
+        <p>Effectively categorize and prioritize your tasks with our easy-to-use interface, designed to streamline your workflow.</p>
+      </div>
+      <div class="w3-quarter feature-card">
+        <i class="fa fa-refresh w3-margin-bottom w3-jumbo"></i>
+        <p class="w3-large">Real-Time Collaboration</p>
+        <p>Stay connected with your team and get real-time updates on shared tasks, ensuring everyone is aligned and informed.</p>
+      </div>
+      <div class="w3-quarter feature-card">
+        <i class="fa fa-calendar w3-margin-bottom w3-jumbo"></i>
+        <p class="w3-large">Schedule Meetings</p>
+        <p>Coordinate with team members, set agendas, and plan ahead with an integrated scheduling system that syncs across devices.</p>
+      </div>
+      
+      <div class="w3-quarter feature-card">
+        <i class="fa fa-sliders w3-margin-bottom w3-jumbo"></i>
+        <p class="w3-large">Customizable Views</p>
+        <p>Personalize your task management experience with customizable views that cater to your personal workflow and preferences.</p>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Team Section -->
+<div class="w3-container w3-padding-24" id="team">
+  <h2 class="w3-center">Our Team</h2>
+  <p class="w3-center w3-large">The minds behind the magic</p>
+  
+  <div class="w3-row-padding w3-grayscale" style="margin-top:3em;">
+    <!-- Team Member 1 -->
+    <div class="w3-col l4 m6 w3-margin-bottom">
+      <div class="w3-card">
+        <img src="{% static 'images/team1.jpg' %}" alt="Team member" style="width:100%">
+        <div class="w3-container">
+          <h3>Yasmeen Lamaa</h3>
+          <p class="w3-opacity">Computer Science Engineer</p>
+        </div>
+      </div>
+    </div>
+    <!-- Team Member 2 -->
+    <div class="w3-col l4 m6 w3-margin-bottom">
+      <div class="w3-card">
+        <img src="{% static 'images/team1.jpg' %}" alt="Team member" style="width:100%">
+        <div class="w3-container">
+          <h3>Nader Al Masri</h3>
+          <p class="w3-opacity">Computer and Communication Engineer</p>
+        </div>
+      </div>
+    </div>
+    <!-- Team Member 3 -->
+    <div class="w3-col l4 m6 w3-margin-bottom">
+      <div class="w3-card">
+        <img src="{% static 'images/team1.jpg' %}" alt="Team member" style="width:100%">
+        <div class="w3-container">
+          <h3>Lynn El Hariri</h3>
+          <p class="w3-opacity">Computer Science Engineer</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </body>
+
+</html>
